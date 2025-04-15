@@ -1,21 +1,27 @@
-import { prisma } from "@/server/db"
-import { EmojiContextProps, Response } from "@/server/utils"
 import { NextResponse } from "next/server"
+import { supabase } from "@/server/db"
 
 export const runtime = "edge"
 export const fetchCache = "force-no-store"
 export const revalidate = 0
 
-export async function GET(request: Request, { params }: EmojiContextProps) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const emoji = await prisma.emoji.findUnique({
-      where: { id: params.id },
-    })
-    if (!emoji) return Response.emojiNotFound()
+    const { data: emoji, error } = await supabase
+      .from('emojis')
+      .select('*')
+      .eq('id', params.id)
+      .single()
 
-    return NextResponse.json({ emoji }, { status: 200 })
+    if (error) throw error
+    if (!emoji) return NextResponse.json({ error: "Emoji not found" }, { status: 404 })
+
+    return NextResponse.json(emoji)
   } catch (error) {
-    console.error(error)
-    return Response.internalServerError()
+    console.error("Error fetching emoji:", error)
+    return NextResponse.json({ error: "Failed to fetch emoji" }, { status: 500 })
   }
 }

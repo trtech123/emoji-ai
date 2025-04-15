@@ -1,4 +1,11 @@
 import "server-only"
-import { prisma } from "./db"
+import { supabase } from "./db"
 
-export const getEmojisCount = async () => prisma.emoji.count()
+export const getEmojisCount = async () => {
+  const { count, error } = await supabase
+    .from('emojis')
+    .select('*', { count: 'exact', head: true })
+
+  if (error) throw error
+  return count || 0
+}

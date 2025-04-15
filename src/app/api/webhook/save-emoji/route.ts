@@ -1,31 +1,20 @@
-import { Response, webhookSchema } from "@/server/utils"
-import { prisma } from "@/server/db"
-import { put } from "@vercel/blob"
+import { NextResponse } from "next/server"
+import { supabase } from "@/server/db"
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const searchParams = new URL(req.url).searchParams
-    const parsedParams = webhookSchema.safeParse(Object.fromEntries(searchParams))
-    if (!parsedParams.success) return Response.invalidRequest(parsedParams.error)
-    const { id } = parsedParams.data
+    const { id, url } = await request.json()
 
-    // get output from Replicate
-    const body = await req.json()
-    const { output } = body
-    if (!output) return Response.badRequest("Missing output")
+    const { error } = await supabase
+      .from('emojis')
+      .update({ no_background_url: url })
+      .eq('id', id)
 
-    // convert output to a blob object
-    const file = await fetch(output).then((res) => res.blob())
+    if (error) throw error
 
-    // upload & store image
-    const { url } = await put(`${id}-no-background.png`, file, { access: "public" })
-
-    // update emoji
-    await prisma.emoji.update({ where: { id }, data: { noBackgroundUrl: url } })
-
-    return Response.success()
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error(error)
-    return Response.internalServerError()
+    console.error("Error saving emoji:", error)
+    return NextResponse.json({ error: "Failed to save emoji" }, { status: 500 })
   }
 }

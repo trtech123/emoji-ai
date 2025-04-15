@@ -1,41 +1,29 @@
-import { Response, webhookSchema } from "@/server/utils"
-import { prisma } from "@/server/db"
-import { replicate } from "@/server/replicate"
-import { put } from "@vercel/blob"
+import { NextResponse } from "next/server"
+import { supabase } from "@/server/db"
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const searchParams = new URL(req.url).searchParams
-    const parsedParams = webhookSchema.safeParse(Object.fromEntries(searchParams))
-    if (!parsedParams.success) return Response.invalidRequest(parsedParams.error)
-    const { id } = parsedParams.data
+    const { id, url, error: bgError } = await request.json()
 
-    // get output from Replicate
-    const body = await req.json()
-    const { output, error } = body
+    if (bgError) {
+      const { error } = await supabase
+        .from('emojis')
+        .update({ is_flagged: true, error: bgError })
+        .eq('id', id)
 
-    if (typeof error === "string") {
-      await prisma.emoji.update({ where: { id }, data: { isFlagged: true, error } })
-      return Response.success()
+      if (error) throw error
+      return NextResponse.json({ success: true })
     }
 
-    if (!output) return Response.badRequest("Missing output")
+    const { error } = await supabase
+      .from('emojis')
+      .update({ original_url: url })
+      .eq('id', id)
 
-    // convert output to a blob object
-    const file = await fetch(output[0]).then((res) => res.blob())
-
-    // upload & store image
-    const { url } = await put(`${id}-original.png`, file, { access: "public" })
-
-    // update emoji
-    await prisma.emoji.update({ where: { id }, data: { originalUrl: url } })
-
-    const res = await replicate.removeBackground({ id, image: output[0] })
-    console.log(res)
-
-    return Response.success()
+    if (error) throw error
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error(error)
-    return Response.internalServerError()
+    console.error("Error processing background removal:", error)
+    return NextResponse.json({ error: "Failed to process background removal" }, { status: 500 })
   }
 }

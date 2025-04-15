@@ -1,13 +1,16 @@
 import { PROD_URL, SITEMAP_PAGE_SIZE } from "@/lib/constants"
-import { prisma } from "@/server/db"
+import { supabase } from "@/server/db"
 import { VALID_EMOJI_FILTER } from "@/server/utils"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
 export async function GET() {
-  const emojisCount = await prisma.emoji.count({ where: VALID_EMOJI_FILTER })
-  const totalSitemaps = Math.ceil(emojisCount / SITEMAP_PAGE_SIZE)
+  const { count } = await supabase
+    .from('emojis')
+    .select('*', { count: 'exact', head: true })
+
+  const totalSitemaps = Math.ceil((count || 0) / SITEMAP_PAGE_SIZE)
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -15,11 +18,12 @@ export async function GET() {
         <loc>${PROD_URL}/</loc>
         <lastmod>${new Date().toISOString()}</lastmod>
       </url>
-      ${Array.from({ length: totalSitemaps })
+      ${Array.from({ length: totalSitemaps }, (_, i) => i + 1)
         .map(
-          (_, index) => `
+          (page) => `
         <sitemap>
-          <loc>${PROD_URL}/api/sitemaps/${index}</loc>
+          <loc>${PROD_URL}/sitemaps/${page}</loc>
+          <lastmod>${new Date().toISOString()}</lastmod>
         </sitemap>
       `
         )

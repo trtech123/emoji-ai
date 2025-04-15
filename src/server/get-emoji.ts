@@ -1,7 +1,13 @@
 import "server-only"
-import { prisma } from "./db"
+import { supabase } from "./db"
 
-export const getEmoji = async (id: string) =>
-  prisma.emoji.findUnique({
-    where: { id },
-  })
+export const getEmoji = async (id: string) => {
+  const { data, error } = await supabase
+    .from('emojis')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data
+}

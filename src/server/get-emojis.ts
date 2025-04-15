@@ -1,26 +1,20 @@
-import { Prisma } from "@prisma/client"
-import "server-only"
-import { prisma } from "./db"
-import { VALID_EMOJI_FILTER } from "./utils"
-import { PrismaCacheStrategy } from "@prisma/extension-accelerate"
+import { supabase } from "./db"
 
-export const getEmojis = async (opts: {
-  take?: number
-  skip?: number
-  orderBy?: Prisma.EmojiOrderByWithAggregationInput | Prisma.EmojiOrderByWithAggregationInput[]
-  cacheStrategy?: PrismaCacheStrategy["cacheStrategy"]
-}) => {
-  const take = opts.take ?? 100
-  const skip = opts.skip ?? undefined
-  const orderBy = opts.orderBy ?? { createdAt: Prisma.SortOrder.desc }
-  const cacheStrategy = opts.cacheStrategy ?? undefined
+interface GetEmojisOptions {
+  limit?: number
+  offset?: number
+  orderBy?: { column: string; ascending: boolean }
+}
 
-  return prisma.emoji.findMany({
-    select: { id: true, updatedAt: true },
-    orderBy,
-    where: VALID_EMOJI_FILTER,
-    take,
-    skip,
-    cacheStrategy,
-  })
+export const getEmojis = async (opts: GetEmojisOptions = {}) => {
+  const { limit = 20, offset = 0, orderBy = { column: 'created_at', ascending: false } } = opts
+
+  const { data, error } = await supabase
+    .from('emojis')
+    .select('*')
+    .order(orderBy.column, { ascending: orderBy.ascending })
+    .range(offset, offset + limit - 1)
+
+  if (error) throw error
+  return data
 }
