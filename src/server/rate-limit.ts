@@ -1,4 +1,4 @@
-import { prisma } from "./db"
+import { supabase } from "@/lib/supabase"
 
 interface RateLimitResult {
   remaining: number
@@ -14,17 +14,14 @@ export async function checkRateLimit(ip: string, isIOS: boolean): Promise<RateLi
   const limit = isIOS ? 3 : 500
 
   // Count requests in the time window
-  const count = await prisma.emoji.count({
-    where: {
-      createdAt: {
-        gte: windowStart,
-      },
-      prompt: ip, // We'll use the prompt field to store the IP temporarily
-    },
-  })
+  const { count } = await supabase
+    .from('emoji')
+    .select('*', { count: 'exact', head: true })
+    .eq('prompt', ip) // We'll use the prompt field to store the IP temporarily
+    .gte('createdAt', windowStart.toISOString())
 
   return {
-    remaining: Math.max(0, limit - count),
+    remaining: Math.max(0, limit - (count ?? 0)),
     reset: windowStart.getTime() + (isIOS ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000),
   }
 } 

@@ -1,33 +1,39 @@
-import { getEmojis } from "@/server/get-emojis"
+import { supabase } from "@/lib/supabase"
 import { EmojiCard } from "../emoji-card"
-import { Prisma } from "@prisma/client"
 
 interface EmojiGridProps {
   prompt?: string
 }
 
+async function getEmojis(prompt?: string) {
+  let query = supabase
+    .from('emoji')
+    .select('*')
+    .order('createdAt', { ascending: false })
+    .limit(50)
+
+  if (prompt) {
+    query = query.ilike('prompt', `%${prompt}%`)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching emojis:', error)
+    return []
+  }
+
+  return data
+}
+
 export async function EmojiGrid({ prompt }: EmojiGridProps) {
-  const emojis = await getEmojis({
-    take: 100,
-    orderBy: prompt
-      ? { prompt: Prisma.SortOrder.asc }
-      : { createdAt: Prisma.SortOrder.desc },
-    cacheStrategy: prompt
-      ? {
-          swr: 86_400, // 1 day
-          ttl: 7_200, // 2 hours
-        }
-      : undefined,
-  })
+  const emojis = await getEmojis(prompt)
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-1200 ease-in-out">
-      <h2 className="font-semibold text-md text-left w-full mb-3">{!!prompt ? "Related Emojis" : "Recent Emojis"}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-stretch w-full">
-        {emojis.map((emoji) => (
-          <EmojiCard key={emoji.id} id={emoji.id} />
-        ))}
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {emojis.map((emoji) => (
+        <EmojiCard key={emoji.id} id={emoji.id} alwaysShowDownloadBtn />
+      ))}
     </div>
   )
 }

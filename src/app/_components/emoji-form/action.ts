@@ -1,7 +1,7 @@
 "use server"
 
 import { nanoid } from "@/lib/utils"
-import { prisma } from "@/server/db"
+import { supabase } from "@/lib/supabase"
 import { replicate } from "@/server/replicate"
 import { checkRateLimit } from "@/server/rate-limit"
 import { jwtVerify } from "jose"
@@ -25,7 +25,17 @@ export async function createEmoji(prevFormState: FormState | undefined, formData
   const id = nanoid()
 
   try {
-    const verified = await jwtVerify(token ?? "", new TextEncoder().encode(process.env.API_SECRET ?? ""))
+    if (!token) {
+      console.error("No token provided")
+      return { message: "Authentication error, please refresh the page." }
+    }
+
+    if (!process.env.API_SECRET) {
+      console.error("API_SECRET is not set")
+      return { message: "Server configuration error, please try again later." }
+    }
+
+    const verified = await jwtVerify(token, new TextEncoder().encode(process.env.API_SECRET))
     const { ip, isIOS } = jwtSchema.parse(verified.payload)
 
     const { remaining } = await checkRateLimit(ip, isIOS)
@@ -35,13 +45,23 @@ export async function createEmoji(prevFormState: FormState | undefined, formData
     const data = { id, prompt, safetyRating }
 
     if (safetyRating >= 9) {
-      await prisma.emoji.create({ data: { ...data, isFlagged: true } })
+      await supabase.from('emoji').insert([{ ...data, isFlagged: true }])
       return { message: "Nice try! Your prompt is inappropriate, let's keep it PG." }
     }
 
-    await Promise.all([prisma.emoji.create({ data }), replicate.createEmoji(data)])
+    await Promise.all([
+      supabase.from('emoji').insert([data]),
+      replicate.createEmoji(data)
+    ])
   } catch (error) {
-    console.error(error)
+    console.error("Error in createEmoji:", error)
+    if (error instanceof Error) {
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+    }
     return { message: "Connection error, please refresh the page." }
   }
 

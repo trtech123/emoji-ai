@@ -1,4 +1,4 @@
-import { getEmojisCount } from "@/server/get-emojis-count"
+import { supabase } from "@/lib/supabase"
 import { Suspense } from "react"
 
 interface CountDisplayProps {
@@ -7,22 +7,28 @@ interface CountDisplayProps {
 
 function CountDisplay({ count }: CountDisplayProps) {
   return (
-    <p className="text-gray-500 mb-12 text-base animate-in fade-in slide-in-from-bottom-4 duration-1200 ease-in-out">
-      {count || "–––"} emojis generated and counting!
-    </p>
+    <span className="text-sm text-gray-400">
+      {count?.toLocaleString() ?? "—"} emojis generated
+    </span>
   )
 }
 
-async function AsyncEmojiCount() {
-  const count = await getEmojisCount()
+async function getEmojisCount() {
+  const { count } = await supabase
+    .from('emoji')
+    .select('*', { count: 'exact', head: true })
+  return count ?? 0
+}
 
+export async function EmojiCount() {
+  const count = await getEmojisCount()
   return <CountDisplay count={count} />
 }
 
-export function EmojiCount() {
+export function EmojiCountSuspense() {
   return (
     <Suspense fallback={<CountDisplay />}>
-      <AsyncEmojiCount />
+      <EmojiCount />
     </Suspense>
   )
 }
