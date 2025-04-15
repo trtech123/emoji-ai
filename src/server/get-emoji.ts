@@ -3,7 +3,7 @@ import { supabase } from "./db"
 
 export const getEmoji = async (id: string) => {
   const { data, error } = await supabase
-    .from('emojis')
+    .from('emoji')
     .select('*')
     .eq('id', id)
     .single()

@@ -3,7 +3,7 @@ import { supabase } from "./db"
 
 export const getEmojisCount = async () => {
   const { count, error } = await supabase
-    .from('emojis')
+    .from('emoji')
     .select('*', { count: 'exact', head: true })
 
   if (error) throw error

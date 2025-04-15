@@ -9,7 +9,7 @@ export async function GET(
   const offset = (page - 1) * SITEMAP_PAGE_SIZE
 
   const { data: emojis } = await supabase
-    .from('emojis')
+    .from('emoji')
     .select('id, updated_at')
     .order('created_at', { ascending: true })
     .range(offset, offset + SITEMAP_PAGE_SIZE - 1)

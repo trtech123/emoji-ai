@@ -35,8 +35,7 @@
 
 - [Replicate](https://replicate.com/) - AI provider
 - [Bun](https://bun.sh/) - Package Manager
-- [PlanetScale](https://planetscale.com/) - MySQL database
-- [Prisma](https://www.prisma.io/) - ORM
+- [Supabase](https://supabase.com/) - PostgreSQL database
 - [Next.js](https://nextjs.org/docs/app) - App Router, Server Actions
 - [Vercel Blob](https://vercel.com/storage/blob) - Storage Bucket
 - [Vercel KV](https://vercel.com/storage/kv) - Redis Database 
@@ -51,7 +50,7 @@ You can deploy this template to Vercel with the button below:
 Note that you'll need to:
 
 - Set up [Replicate](https://replicate.com)
-- Set up [PlanetScale](https://planetscale.com/)
+- Set up [Supabase](https://supabase.com/)
 - Set up [Vercel Blob](https://vercel.com/docs/storage/vercel-blob/quickstart)
 - Set up [Vercel KV](https://vercel.com/docs/storage/vercel-kv/quickstart)
 

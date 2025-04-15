@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { data: emoji, error } = await supabase
-      .from('emojis')
+      .from('emoji')
       .select('*')
       .eq('id', params.id)
       .single()
