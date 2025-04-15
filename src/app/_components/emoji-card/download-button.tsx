@@ -4,9 +4,12 @@ import { Download } from "lucide-react";
 interface DownloadButtonProps {
   imageUrl: string;
   prompt: string;
+  id?: string;
+  className?: string;
+  alwaysShow?: boolean;
 }
 
-export function DownloadButton({ imageUrl, prompt }: DownloadButtonProps) {
+export function DownloadButton({ imageUrl, prompt, id, className, alwaysShow }: DownloadButtonProps) {
   const handleDownload = async () => {
     try {
       const response = await fetch(imageUrl);
@@ -29,7 +32,8 @@ export function DownloadButton({ imageUrl, prompt }: DownloadButtonProps) {
       variant="outline"
       size="sm"
       onClick={handleDownload}
-      className="flex items-center gap-2"
+      className={className}
+      id={id}
     >
       <Download className="h-4 w-4" />
       Download
