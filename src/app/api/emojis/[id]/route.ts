@@ -1,7 +1,6 @@
 import { supabase } from "@/lib/supabase"
 import { NextRequest, NextResponse } from "next/server"
 
-export const runtime = "edge"
 export const fetchCache = "force-no-store"
 export const revalidate = 0
 

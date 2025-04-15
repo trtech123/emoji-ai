@@ -6,7 +6,6 @@ import toast from "react-hot-toast"
 import useSWR from "swr"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 
 interface EmojiFormProps {
   initialPrompt?: string
@@ -160,11 +159,9 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
               <span>Generating emoji...</span>
             </div>
           ) : generatedEmoji.imageUrl ? (
-            <Image
+            <img
               src={generatedEmoji.imageUrl}
               alt={generatedEmoji.prompt}
-              width={256}
-              height={256}
               className="w-64 h-64 object-contain"
             />
           ) : (
