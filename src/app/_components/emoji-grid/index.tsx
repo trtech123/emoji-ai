@@ -1,5 +1,6 @@
 import { getEmojis } from "@/server/get-emojis"
 import { EmojiCard } from "../emoji-card"
+import { Prisma } from "@prisma/client"
 
 interface EmojiGridProps {
   prompt?: string
@@ -9,14 +10,8 @@ export async function EmojiGrid({ prompt }: EmojiGridProps) {
   const emojis = await getEmojis({
     take: 100,
     orderBy: prompt
-      ? {
-          _relevance: {
-            fields: ["prompt"],
-            sort: "desc",
-            search: prompt,
-          },
-        }
-      : undefined,
+      ? { prompt: Prisma.SortOrder.asc }
+      : { createdAt: Prisma.SortOrder.desc },
     cacheStrategy: prompt
       ? {
           swr: 86_400, // 1 day
