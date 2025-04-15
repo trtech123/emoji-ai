@@ -7,7 +7,7 @@ export async function POST(request: Request) {
 
     const { error } = await supabase
       .from('emoji')
-      .update({ no_background_url: url })
+      .update({ no_background_url: url, status: 'completed' })
       .eq('id', id)
 
     if (error) throw error

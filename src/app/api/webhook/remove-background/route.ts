@@ -7,7 +7,7 @@ export async function POST(request: Request) {
 
     if (bgError) {
       const { error } = await supabase
-        .from('emojis')
+        .from('emoji')
         .update({ is_flagged: true, error: bgError })
         .eq('id', id)
 
@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     }
 
     const { error } = await supabase
-      .from('emojis')
-      .update({ original_url: url })
+      .from('emoji')
+      .update({ original_url: url, status: 'completed' })
       .eq('id', id)
 
     if (error) throw error

@@ -37,7 +37,7 @@ export async function EmojiCard({ id, alwaysShowDownloadBtn }: EmojiCardProps) {
     <ButtonCard
       id={emoji.id}
       prompt={emoji.prompt}
-      imageUrl={emoji.imageUrl}
+      imageUrl={emoji.no_background_url || emoji.original_url}
       createdAt={emoji.created_at}
       alwaysShowDownloadBtn={alwaysShowDownloadBtn}
     />

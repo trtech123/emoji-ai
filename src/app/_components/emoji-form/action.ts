@@ -49,10 +49,14 @@ export async function createEmoji(prevFormState: FormState | undefined, formData
       return { message: "Nice try! Your prompt is inappropriate, let's keep it PG." }
     }
 
-    await Promise.all([
-      supabase.from('emoji').insert([data]),
-      replicate.createEmoji(data)
-    ])
+    // Create initial emoji record
+    await supabase.from('emoji').insert([{ ...data, status: 'generating' }])
+    
+    // Generate emoji
+    await replicate.createEmoji(data)
+    
+    // Redirect to the emoji page
+    redirect(`/p/${id}`)
   } catch (error) {
     console.error("Error in createEmoji:", error)
     if (error instanceof Error) {
@@ -64,6 +68,4 @@ export async function createEmoji(prevFormState: FormState | undefined, formData
     }
     return { message: "Connection error, please refresh the page." }
   }
-
-  redirect(`/p/${id}`)
 }
