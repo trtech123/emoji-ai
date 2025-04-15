@@ -19,7 +19,7 @@ export async function checkRateLimit(ip: string, isIOS: boolean): Promise<RateLi
       .from('emoji')
       .select('*', { count: 'exact', head: true })
       .eq('prompt', ip) // We'll use the prompt field to store the IP temporarily
-      .gte('createdAt', windowStart.toISOString())
+      .gte('created_at', windowStart.toISOString())
 
     if (error) {
       console.error('Error checking rate limit:', error)

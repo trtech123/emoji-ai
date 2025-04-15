@@ -1,5 +1,4 @@
-import { formatPrompt } from "@/lib/utils"
-import { getEmoji } from "@/server/get-emoji"
+import { supabase } from "@/lib/supabase"
 import { ButtonCard } from "./button-card"
 
 interface EmojiCardProps {
@@ -7,16 +6,39 @@ interface EmojiCardProps {
   alwaysShowDownloadBtn?: boolean
 }
 
+async function getEmoji(id: string) {
+  try {
+    const { data, error } = await supabase
+      .from('emoji')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching emoji:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Error in getEmoji:', error)
+    return null
+  }
+}
+
 export async function EmojiCard({ id, alwaysShowDownloadBtn }: EmojiCardProps) {
-  const data = await getEmoji(id)
-  if (!data) return null
+  const emoji = await getEmoji(id)
+
+  if (!emoji) {
+    return null
+  }
 
   return (
     <ButtonCard
-      id={id}
-      name={formatPrompt(data.prompt)}
-      src={data.noBackgroundUrl}
-      createdAt={data.createdAt}
+      id={emoji.id}
+      prompt={emoji.prompt}
+      imageUrl={emoji.imageUrl}
+      createdAt={emoji.created_at}
       alwaysShowDownloadBtn={alwaysShowDownloadBtn}
     />
   )

@@ -10,7 +10,7 @@ async function getEmojis(prompt?: string) {
     let query = supabase
       .from('emoji')
       .select('*')
-      .order('createdAt', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(50)
 
     if (prompt) {

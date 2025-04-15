@@ -7,14 +7,16 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Loader } from "../loader"
-import { cn } from "@/lib/utils"
+import { cn, formatPrompt } from "@/lib/utils"
 import useSWR from "swr"
+import { formatDistanceToNow } from "date-fns"
+import { DownloadButton } from "./download-button"
 
-interface ButtonCard {
+interface ButtonCardProps {
   id: string
-  name: string
-  src: string | null
-  createdAt: Date
+  prompt: string
+  imageUrl: string
+  createdAt: string
   alwaysShowDownloadBtn?: boolean
 }
 
@@ -36,99 +38,27 @@ async function fetcher(url: string) {
     }))
 }
 
-export function ButtonCard({ id, name, src: _src, createdAt, alwaysShowDownloadBtn }: ButtonCard) {
-  // revalidate image src every second while generating (max 1 minute)
-  const isGenerating = new Date(createdAt).getTime() > Date.now() - 60_000
-  const { data, isLoading: isLoadingEmoji } = useSWR<Awaited<ReturnType<typeof fetcher>>>(
-    !_src && isGenerating ? `/api/emojis/${id}` : null,
-    {
-      fetcher,
-      refreshInterval: (data) => (!!data?.recentSrc || !isGenerating ? 0 : 1000), // 1 second
-    }
-  )
-
-  const [isLoadingImage, setIsLoadingImage] = useState(false)
-  const [isDownloadingEmoji, setIsDownloadingEmoji] = useState(false)
-
-  const src = data?.recentSrc || _src
-  const showImageTag = !!src // don't render image tag if no src
-  const showImagePlaceholder = isLoadingEmoji || isLoadingImage || !showImageTag
-
-  useEffect(() => {
-    if (!showImageTag || !isLoadingImage) return
-    setIsLoadingImage(true)
-  }, [isLoadingImage, showImageTag])
-
-  useEffect(() => {
-    if (isLoadingEmoji || !data?.error) return
-    toast.error(data.error)
-  }, [isLoadingEmoji, data?.error])
-
-  async function handleDownload() {
-    if (!src) return
-
-    track("Download Emoji")
-    setIsDownloadingEmoji(true)
-    const toastId = toast.loading(`Downloading :${name}:`)
-
-    try {
-      const res = await fetch(src, {
-        headers: new Headers({ Origin: location.origin }),
-        mode: "cors",
-      })
-      const blob = await res.blob()
-      const blobUrl = window.URL.createObjectURL(blob)
-
-      downloadBlob(blobUrl, `${name}.png`)
-      toast.success(`Downloaded :${name}:`, { id: toastId })
-    } catch (error) {
-      console.error(error)
-      toast.error(`Failed to download :${name}:`, { id: toastId })
-    } finally {
-      setIsDownloadingEmoji(false)
-    }
-  }
-
+export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownloadBtn }: ButtonCardProps) {
   return (
-    <div
-      id={id}
-      className="borders ring-1 ring-gray-200 flex flex-row flex-nowrap py-1 px-1.5 items-center shadow-sm rounded-xl gap-1.5 bg-white w-full relative group"
-    >
-      {showImageTag && (
-        <Image
-          alt="ai generated emoji"
-          src={src}
-          width={EMOJI_SIZE}
-          height={EMOJI_SIZE}
-          className="h-8 w-8 aspect-square"
-          onLoadingComplete={() => setIsLoadingImage(false)}
-        />
-      )}
-      {showImagePlaceholder && (
-        <div
-          aria-hidden
-          className={cn("w-8 h-8 aspect-square bg-white", showImageTag ? "absolute left-1.5" : "relative")}
-        >
-          <div className="w-full h-full skeleton bg-gray-200 rounded-lg" />
+    <div className="group relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+      <img
+        src={imageUrl}
+        alt={prompt}
+        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <p className="text-sm text-white">{formatPrompt(prompt)}</p>
+          <p className="text-xs text-white/80">
+            {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+          </p>
         </div>
-      )}
-
-      <p className="font-mono text-sm truncate" title={name}>
-        :{name}:
-      </p>
-
-      <button
-        className={cn(
-          "w-8 h-8 aspect-square flex items-center justify-center rounded-lg ring-1 ring-gray-200 absolute right-1 opacity-100 group-hover:opacity-100 transition-opacity duration-200 ease-out bg-white shadow focus:opacity-100",
-          !alwaysShowDownloadBtn && "sm:opacity-0",
-          !showImageTag && "hidden"
-        )}
-        onClick={handleDownload}
-        disabled={isDownloadingEmoji || !showImageTag}
-      >
-        <span className="sr-only">Download emoji</span>
-        {isDownloadingEmoji ? <Loader /> : <Download size={16} />}
-      </button>
+      </div>
+      <DownloadButton
+        id={id}
+        className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+        alwaysShow={alwaysShowDownloadBtn}
+      />
     </div>
   )
 }
