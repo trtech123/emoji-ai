@@ -1,16 +1,16 @@
-import { supabaseAdmin } from "@/lib/supabase"
+import { createAdminClient } from "@/lib/supabase"
 import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
     // Check if lowercase emoji table exists
-    const { data: emojiData, error: emojiError } = await supabaseAdmin
+    const { data: emojiData, error: emojiError } = await createAdminClient()
       .from('emoji')
       .select('count')
       .limit(1)
 
     // Check if uppercase Emoji table exists
-    const { data: EmojiData, error: EmojiError } = await supabaseAdmin
+    const { data: EmojiData, error: EmojiError } = await createAdminClient()
       .from('Emoji')
       .select('count')
       .limit(1)

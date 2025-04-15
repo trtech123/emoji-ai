@@ -1,8 +1,8 @@
-import { supabase, supabaseAdmin } from "./supabase"
+import { supabase, createAdminClient } from "./supabase"
 
 export async function checkEmojiTable() {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await createAdminClient()
       .from('emoji')
       .select('count')
       .limit(1)
@@ -26,7 +26,7 @@ export async function checkEmojiTable() {
 
 export async function createEmojiTable() {
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await createAdminClient()
       .from('emoji')
       .select('count')
       .limit(1)
@@ -64,7 +64,7 @@ export async function testEmojiTable() {
       no_background_url: 'https://example.com/test-nobg.png'
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await createAdminClient()
       .from('emoji')
       .insert([testEmoji])
       .select()
@@ -77,7 +77,7 @@ export async function testEmojiTable() {
     console.log('Successfully inserted test emoji:', data)
     
     // Clean up the test record
-    await supabaseAdmin
+    await createAdminClient()
       .from('emoji')
       .delete()
       .eq('id', testEmoji.id)
