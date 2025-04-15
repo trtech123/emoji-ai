@@ -36,7 +36,7 @@ export function DownloadButton({ imageUrl, prompt, id, className, alwaysShow }: 
       id={id}
     >
       <Download className="h-4 w-4" />
-      Download
+      להורדה
     </Button>
   );
 } 

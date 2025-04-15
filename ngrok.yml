@@ -1,0 +1,7 @@
+version: 2
+tunnels:
+  emoji-generator:
+    proto: http
+    addr: 3000
+    schemes:
+      - https 
