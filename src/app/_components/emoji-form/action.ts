@@ -3,8 +3,7 @@
 import { nanoid } from "@/lib/utils"
 import { prisma } from "@/server/db"
 import { replicate } from "@/server/replicate"
-import { Ratelimit } from "@upstash/ratelimit"
-import { kv } from "@vercel/kv"
+import { checkRateLimit } from "@/server/rate-limit"
 import { jwtVerify } from "jose"
 import { redirect } from "next/navigation"
 import { z } from "zod"
@@ -13,18 +12,6 @@ const jwtSchema = z.object({
   ip: z.string(),
   isIOS: z.boolean(),
 })
-
-const ratelimit = {
-  free: new Ratelimit({
-    redis: kv,
-    limiter: Ratelimit.slidingWindow(500, "1 d"),
-  }),
-  ios: new Ratelimit({
-    redis: kv,
-    limiter: Ratelimit.slidingWindow(3, "7 d"),
-    prefix: "ratelimit:ios",
-  }),
-}
 
 interface FormState {
   message: string
@@ -41,7 +28,7 @@ export async function createEmoji(prevFormState: FormState | undefined, formData
     const verified = await jwtVerify(token ?? "", new TextEncoder().encode(process.env.API_SECRET ?? ""))
     const { ip, isIOS } = jwtSchema.parse(verified.payload)
 
-    const { remaining } = await (isIOS ? ratelimit.ios.limit(ip) : ratelimit.free.limit(ip))
+    const { remaining } = await checkRateLimit(ip, isIOS)
     if (remaining <= 0) return { message: "Free limit reached, download mobile app for unlimited access." }
 
     const safetyRating = await replicate.classifyPrompt({ prompt })
