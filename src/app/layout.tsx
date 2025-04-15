@@ -119,7 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className={cn("min-h-screen flex items-stretch flex-col pb-28 max-w-5xl mx-auto", BODY_PADDING)}>
           {children}
         </main>
-        <Providers />
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

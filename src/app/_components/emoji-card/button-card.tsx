@@ -56,6 +56,8 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
       </div>
       <DownloadButton
         id={id}
+        imageUrl={imageUrl}
+        prompt={prompt}
         className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
         alwaysShow={alwaysShowDownloadBtn}
       />
