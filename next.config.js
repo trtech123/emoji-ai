@@ -1,23 +1,25 @@
-const { withAxiom } = require("next-axiom")
-
 /** @type {import('next').NextConfig} */
-const nextConfig = withAxiom({
+const nextConfig = {
   images: {
-    domains: ["aaah0mnbncqtinas.public.blob.vercel-storage.com"],
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "replicate.com",
+      },
+      {
+        protocol: "https",
+        hostname: "replicate.delivery",
+      },
+      {
+        protocol: "https",
+        hostname: "*.replicate.delivery",
+      },
+      {
+        protocol: "https",
+        hostname: "pub-3626123a908346a7a6be8d9295f44e26.r2.dev",
+      },
+    ],
   },
-  rewrites: async () => [
-    {
-      source: "/privacy",
-      destination: "https://api.emojis.sh/assets/privacy",
-      basePath: false,
-    },
-    {
-      source: "/terms",
-      destination: "https://api.emojis.sh/assets/terms",
-      basePath: false,
-    },
-  ],
-})
+}
 
 module.exports = nextConfig

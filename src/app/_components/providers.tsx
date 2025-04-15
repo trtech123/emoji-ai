@@ -1,15 +1,12 @@
 "use client"
 
-import { Analytics } from "@vercel/analytics/react"
-import { AxiomWebVitals } from "next-axiom"
 import { Toaster } from "react-hot-toast"
 
-export function Providers() {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Analytics />
-      <AxiomWebVitals />
-      <Toaster position="top-right" />
+      {children}
+      <Toaster />
     </>
   )
 }
