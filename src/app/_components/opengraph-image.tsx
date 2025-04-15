@@ -1,4 +1,4 @@
-import { ImageResponse } from "next/server"
+import { ImageResponse } from "next/og"
 
 const EMOJI_SIZE = 570
 export const size = {
@@ -11,7 +11,7 @@ interface OpenGraphImageProps {
   url: string
 }
 
-export function OpenGraphImage({ url }: OpenGraphImageProps) {
+export async function OpenGraphImage({ url }: OpenGraphImageProps) {
   return new ImageResponse(
     (
       <div
@@ -30,6 +30,9 @@ export function OpenGraphImage({ url }: OpenGraphImageProps) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="" height={EMOJI_SIZE} src={url} width={EMOJI_SIZE} />
       </div>
-    )
+    ),
+    {
+      ...size,
+    }
   )
 }

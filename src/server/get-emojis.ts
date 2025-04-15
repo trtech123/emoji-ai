@@ -7,9 +7,7 @@ import { PrismaCacheStrategy } from "@prisma/extension-accelerate"
 export const getEmojis = async (opts: {
   take?: number
   skip?: number
-  orderBy?:
-    | Prisma.EmojiOrderByWithRelationAndSearchRelevanceInput
-    | Prisma.EmojiOrderByWithRelationAndSearchRelevanceInput[]
+  orderBy?: Prisma.EmojiOrderByWithAggregationInput | Prisma.EmojiOrderByWithAggregationInput[]
   cacheStrategy?: PrismaCacheStrategy["cacheStrategy"]
 }) => {
   const take = opts.take ?? 100
