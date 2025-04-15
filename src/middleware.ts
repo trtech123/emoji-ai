@@ -9,13 +9,36 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  await track("Go to App Store", {
-    origin: request.nextUrl.origin,
-    referrer: request.nextUrl.searchParams.get("referrer") ?? "unknown",
-  })
-  return NextResponse.redirect(APP_STORE_URL)
+  // Handle preflight requests
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    })
+  }
+
+  // Track analytics for app store redirects
+  if (request.nextUrl.pathname === '/app') {
+    await track("Go to App Store", {
+      origin: request.nextUrl.origin,
+      referrer: request.nextUrl.searchParams.get("referrer") ?? "unknown",
+    })
+    return NextResponse.redirect(APP_STORE_URL)
+  }
+
+  // Add CORS headers to all other responses
+  const response = NextResponse.next()
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+  return response
 }
 
 export const config = {
-  matcher: ["/app", "/api/test-db"],
+  matcher: ["/app", "/api/test-db", "/:path*"],
 }
