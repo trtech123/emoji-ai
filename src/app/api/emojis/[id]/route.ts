@@ -1,31 +1,31 @@
-import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
+import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "edge"
 export const fetchCache = "force-no-store"
 export const revalidate = 0
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+type Props = {
+  params: { id: string }
+}
+
+export async function GET(request: NextRequest, { params }: Props) {
   try {
-    const { data, error } = await supabase
-      .from("emoji")
-      .select("*")
-      .eq("id", params.id)
+    const { data: emoji, error } = await supabase
+      .from('emoji')
+      .select('*')
+      .eq('id', params.id)
       .single()
 
     if (error) {
-      console.error("Error fetching emoji:", error)
-      return NextResponse.json({ error: "Failed to fetch emoji" }, { status: 500 })
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    if (!data) {
+    if (!emoji) {
       return NextResponse.json({ error: "Emoji not found" }, { status: 404 })
     }
 
-    return NextResponse.json(data)
+    return NextResponse.json({ emoji })
   } catch (error) {
     console.error("Error in GET /api/emojis/[id]:", error)
     return NextResponse.json(

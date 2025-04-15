@@ -51,7 +51,7 @@ export async function createEmoji(prevFormState: FormState | undefined, formData
 
     await Promise.all([
       supabase.from('emoji').insert([data]),
-      replicate.createEmoji(data)
+      replicate.createEmoji(data.prompt, data.id)
     ])
   } catch (error) {
     console.error("Error in createEmoji:", error)

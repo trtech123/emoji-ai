@@ -6,6 +6,7 @@ import toast from "react-hot-toast"
 import useSWR from "swr"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 interface EmojiFormProps {
   initialPrompt?: string
@@ -61,7 +62,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     }, 1000)
 
     return () => clearInterval(pollInterval)
-  }, [generatedEmoji?.replicate_id, generatedEmoji?.status])
+  }, [generatedEmoji?.replicate_id, generatedEmoji?.status, generatedEmoji])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -159,9 +160,11 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
               <span>Generating emoji...</span>
             </div>
           ) : generatedEmoji.imageUrl ? (
-            <img
+            <Image
               src={generatedEmoji.imageUrl}
               alt={generatedEmoji.prompt}
+              width={256}
+              height={256}
               className="w-64 h-64 object-contain"
             />
           ) : (
