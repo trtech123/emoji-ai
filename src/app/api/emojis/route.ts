@@ -11,8 +11,6 @@ const jwtSchema = z.object({
   isIOS: z.boolean(),
 })
 
-export const runtime = "edge"
-
 export async function POST(request: Request) {
   console.log("Emoji API route called")
   
@@ -68,7 +66,8 @@ export async function POST(request: Request) {
       is_featured: false,
       original_url: null,
       no_background_url: null,
-      error: null
+      error: null,
+      ip: ip  // Add IP address to the data
     }
 
     // Create admin client
