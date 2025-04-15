@@ -14,10 +14,21 @@ function CountDisplay({ count }: CountDisplayProps) {
 }
 
 async function getEmojisCount() {
-  const { count } = await supabase
-    .from('emoji')
-    .select('*', { count: 'exact', head: true })
-  return count ?? 0
+  try {
+    const { count, error } = await supabase
+      .from('emoji')
+      .select('*', { count: 'exact', head: true })
+
+    if (error) {
+      console.error('Error counting emojis:', error)
+      return 0
+    }
+
+    return count ?? 0
+  } catch (error) {
+    console.error('Error in getEmojisCount:', error)
+    return 0
+  }
 }
 
 export async function EmojiCount() {

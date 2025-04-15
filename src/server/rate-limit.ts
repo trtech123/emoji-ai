@@ -13,15 +13,31 @@ export async function checkRateLimit(ip: string, isIOS: boolean): Promise<RateLi
 
   const limit = isIOS ? 3 : 500
 
-  // Count requests in the time window
-  const { count } = await supabase
-    .from('emoji')
-    .select('*', { count: 'exact', head: true })
-    .eq('prompt', ip) // We'll use the prompt field to store the IP temporarily
-    .gte('createdAt', windowStart.toISOString())
+  try {
+    // Count requests in the time window
+    const { count, error } = await supabase
+      .from('emoji')
+      .select('*', { count: 'exact', head: true })
+      .eq('prompt', ip) // We'll use the prompt field to store the IP temporarily
+      .gte('createdAt', windowStart.toISOString())
 
-  return {
-    remaining: Math.max(0, limit - (count ?? 0)),
-    reset: windowStart.getTime() + (isIOS ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000),
+    if (error) {
+      console.error('Error checking rate limit:', error)
+      return {
+        remaining: limit,
+        reset: windowStart.getTime() + (isIOS ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000),
+      }
+    }
+
+    return {
+      remaining: Math.max(0, limit - (count ?? 0)),
+      reset: windowStart.getTime() + (isIOS ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000),
+    }
+  } catch (error) {
+    console.error('Error in checkRateLimit:', error)
+    return {
+      remaining: limit,
+      reset: windowStart.getTime() + (isIOS ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000),
+    }
   }
 } 
