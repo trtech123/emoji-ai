@@ -18,7 +18,6 @@ export async function checkRateLimit(ip: string, isIOS: boolean): Promise<RateLi
     const { count, error } = await supabase
       .from('emoji')
       .select('*', { count: 'exact', head: true })
-      .eq('ip', ip)
       .gte('created_at', windowStart.toISOString())
 
     if (error) {
