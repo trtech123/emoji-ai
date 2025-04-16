@@ -66,8 +66,7 @@ export async function POST(request: Request) {
       is_featured: false,
       original_url: null,
       no_background_url: null,
-      error: null,
-      ip: ip  // Add IP address to the data
+      error: null
     }
 
     // Create admin client
