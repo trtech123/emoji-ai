@@ -15,6 +15,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export function createAdminClient() {
+  // Add console log to check the env var value
+  console.log("Checking SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Exists" : "Missing or Empty");
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('Missing environment variable: SUPABASE_SERVICE_ROLE_KEY')
   }
