@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
@@ -15,11 +15,14 @@ import {
 } from "@/components/ui/dialog"
 import type { User } from '@supabase/supabase-js'
 import { LogIn, LogOut } from 'lucide-react'
+import { signOutAction } from '../actions'
+import toast from 'react-hot-toast'
 
 export default function AuthButton() {
   const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
     console.log("[AuthButton] useEffect running - Setting up listener");
@@ -87,8 +90,20 @@ export default function AuthButton() {
   }, [supabase.auth]); // Dependency array remains the same
 
   const handleSignOut = async () => {
-    console.log("[AuthButton] handleSignOut called");
-    await supabase.auth.signOut()
+    console.log("[AuthButton] handleSignOut called - using Server Action");
+    startTransition(async () => {
+      const result = await signOutAction();
+      if (result?.error) {
+        toast.error(`Sign out failed: ${result.error}`);
+        console.error("[AuthButton] Server Action sign out failed:", result.error);
+      } else {
+        console.log("[AuthButton] Server Action sign out successful (client-side perspective)");
+        // No need to manually call setUser(null) here,
+        // the redirect and subsequent page load/auth state listener will handle it.
+      }
+    });
+    // Original client-side call (removed):
+    // await supabase.auth.signOut()
   }
 
   console.log("[AuthButton] Rendering, user state:", { userId: user?.id });
@@ -99,8 +114,12 @@ export default function AuthButton() {
         <span className="text-sm text-muted-foreground hidden sm:inline-block">
           {user.email}
         </span>
-        <Button variant="ghost" size="sm" onClick={handleSignOut} title="התנתק">
-          <LogOut className="h-4 w-4" />
+        <Button variant="ghost" size="sm" onClick={handleSignOut} title="התנתק" disabled={isPending}>
+          {isPending ? (
+            <span className="animate-spin h-4 w-4">⏳</span>
+          ) : (
+            <LogOut className="h-4 w-4" />
+          )}
           <span className="sr-only">התנתק</span>
         </Button>
       </div>

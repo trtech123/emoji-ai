@@ -28,6 +28,8 @@ interface Profile {
   is_admin: boolean
 }
 
+const DEFAULT_GENERATION_CREDITS = 5;
+
 interface EmojiFormProps {
   initialPrompt?: string
 }
@@ -49,47 +51,63 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   const [showOutOfTokensModal, setShowOutOfTokensModal] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false)
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     const fetchUserProfile = async (currentUser: User) => {
-      console.log(`[EmojiForm] Attempting to fetch profile for user: ${currentUser.id}`);
+      console.log(`[EmojiForm] Attempting to fetch/create profile for user: ${currentUser.id}`);
       setIsLoadingProfile(true);
       setError(null);
-      let profileData = null;
-      let fetchError = null;
+      let profileData: Profile | null = null;
 
       try {
-        const { data, error } = await supabase
+        const { data: existingProfile, error: fetchError } = await supabase
           .from('profiles')
-          .select('id, generation_credits, is_admin, updated_at') 
+          .select('id, generation_credits, is_admin, updated_at')
           .eq('id', currentUser.id)
           .single();
-          
-        fetchError = error;
-        profileData = data;
 
-        if (fetchError) {
-          console.error(`[EmojiForm] Error fetching profile for ${currentUser.id}:`, fetchError);
-          if (fetchError.code === 'PGRST116') { // Profile not found
-             console.warn(`[EmojiForm] Profile not found for user: ${currentUser.id}`);
-             setUserProfile(null);
+        if (existingProfile) {
+          console.log(`[EmojiForm] Fetched existing profile for ${currentUser.id}:`, existingProfile);
+          profileData = existingProfile as Profile;
+
+        } else if (fetchError && fetchError.code === 'PGRST116') {
+          console.warn(`[EmojiForm] Profile not found for ${currentUser.id}. Attempting creation.`);
+          
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({ 
+              id: currentUser.id, 
+              generation_credits: DEFAULT_GENERATION_CREDITS,
+              is_admin: false
+            })
+            .select('id, generation_credits, is_admin, updated_at')
+            .single();
+
+          if (insertError) {
+            console.error(`[EmojiForm] Error creating profile for ${currentUser.id}:`, insertError);
+            throw new Error("שגיאה ביצירת פרופיל המשתמש שלך.");
+          } else if (newProfile) {
+             console.log(`[EmojiForm] Created new profile for ${currentUser.id}:`, newProfile);
+            profileData = newProfile as Profile;
           } else {
-            // Throw other errors to be caught by the outer catch block
-            throw fetchError; 
+             console.error(`[EmojiForm] Profile creation for ${currentUser.id} returned no data/error.`);
+             throw new Error("אירעה שגיאה בלתי צפויה ביצירת הפרופיל.");
           }
-        } else if (profileData) {
-          console.log(`[EmojiForm] Successfully fetched profile for ${currentUser.id}:`, profileData);
-          setUserProfile(profileData as Profile);
+        } else if (fetchError) {
+          console.error(`[EmojiForm] Error fetching profile (non-PGRST116) for ${currentUser.id}:`, fetchError);
+          throw fetchError;
         } else {
-           console.warn(`[EmojiForm] Profile fetch returned no data and no error for ${currentUser.id}`);
-           setUserProfile(null);
+           console.warn(`[EmojiForm] Profile fetch for ${currentUser.id} returned no data/error.`);
+           throw new Error("אירעה שגיאה בלתי צפויה בטעינת הפרופיל.");
         }
+        
+        setUserProfile(profileData);
+
       } catch (err: any) {
-        // Catch errors thrown from the try block (like non-PGRST116 errors)
-        console.error(`[EmojiForm] CATCH block: Error processing profile fetch for ${currentUser.id}:`, err);
-        setError("לא ניתן לטעון פרופיל שלך. אנא נסה שוב מאוחר יותר.");
+        console.error(`[EmojiForm] CATCH block: Error processing profile for ${currentUser.id}:`, err);
+        setError(err.message || "לא ניתן לטעון או ליצור את הפרופיל שלך.");
         setUserProfile(null);
       } finally {
         console.log(`[EmojiForm] FINALLY block: Setting isLoadingProfile to false for ${currentUser.id}`);
@@ -97,27 +115,32 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        console.log(`[EmojiForm] onAuthStateChange: User detected (${session.user.id}), fetching profile.`);
-        await fetchUserProfile(session.user);
-      } else {
-        console.log(`[EmojiForm] onAuthStateChange: User logged out.`);
-        setUserProfile(null);
-        setIsLoadingProfile(false); // Ensure loading is false on logout
-      }
+    const handleAuthChange = async (user: User | null) => {
+        setUser(user);
+        if (user) {
+            await fetchUserProfile(user);
+        } else {
+            setUserProfile(null);
+            setIsLoadingProfile(false);
+        }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        handleAuthChange(session?.user ?? null);
     });
-    supabase.auth.getUser().then(async ({ data: { user: currentUser } }) => {
-      if (currentUser) {
-         console.log(`[EmojiForm] Initial getUser: User detected (${currentUser.id}), fetching profile.`);
-        await fetchUserProfile(currentUser);
-      } else {
-         console.log(`[EmojiForm] Initial getUser: No user detected.`);
-        setIsLoadingProfile(false);
-      }
+
+    supabase.auth.getUser().then(({ data }) => {
+        supabase.auth.getSession().then(({ data: { session }}) => {
+            if(!session) {
+                handleAuthChange(data.user);
+            }
+        })
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+        console.log("[EmojiForm] useEffect cleanup: Unsubscribing auth listener.");
+        subscription.unsubscribe();
+    };
   }, [supabase]);
 
   useEffect(() => {
@@ -128,36 +151,41 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
   const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
-    if (isSubmitting || !formRef.current || isLoadingProfile) return;
+
+    if (isSubmitting || isLoadingProfile) {
+      console.log(`[EmojiForm] handleSubmit blocked: isSubmitting=${isSubmitting}, isLoadingProfile=${isLoadingProfile}`);
+      return;
+    }
 
     if (!user) {
-      setError("אנא התחבר כדי ליצור אימוג'ים.");
+      setError("אנא התחבר כדי ליצור אימוג\'ים.");
       setShowLoginModal(true);
       toast.error("אנא התחבר תחילה.");
       return;
     }
 
-    const formData = new FormData(formRef.current);
-    const prompt = formData.get("prompt") as string;
+    if (!userProfile) {
+        setError("לא ניתן היה לטעון או ליצור את הפרופיל שלך. אנא רענן את הדף ונסה שוב.");
+        toast.error("לא ניתן לטעון פרופיל. נסה לרענן.");
+        return;
+    }
 
-    if (!prompt?.trim()) {
-      setError("אנא הזן תיאור.");
-      toast.error("אנא הזן תיאור.");
+    const formData = new FormData(formRef.current!); 
+    const promptValue = formData.get("prompt");
+
+    if (typeof promptValue !== 'string' || !promptValue.trim()) { 
+      setError("אנא הזן תיאור תקין.");
+      toast.error("אנא הזן תיאור תקין.");
       return;
     }
+    
+    const prompt = promptValue; 
 
     setIsSubmitting(true);
     setError(null);
     setGeneratedEmoji(null);
     setShowLoginModal(false);
     setShowOutOfTokensModal(false);
-
-    if (!userProfile) {
-        setError("לא ניתן היה לטעון את נתוני הפרופיל שלך. אנא המתן רגע או רענן.");
-        toast.error("לא ניתן לטעון פרופיל. נסה שוב.");
-        setIsSubmitting(false);
-        return;
-    }
 
     const isAdmin = userProfile.is_admin;
     const availableCredits = userProfile.generation_credits;
