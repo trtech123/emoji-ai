@@ -33,7 +33,7 @@
 
 ## Tech Stack
 
-- [Replicate](https://replicate.com/) - AI provider
+- [OpenAI DALL-E](https://openai.com/dall-e-3/) - AI provider
 - [Bun](https://bun.sh/) - Package Manager
 - [Supabase](https://supabase.com/) - PostgreSQL database
 - [Next.js](https://nextjs.org/docs/app) - App Router, Server Actions
@@ -49,7 +49,7 @@ You can deploy this template to Vercel with the button below:
 
 Note that you'll need to:
 
-- Set up [Replicate](https://replicate.com)
+- Set up [OpenAI DALL-E](https://platform.openai.com/api-keys)
 - Set up [Supabase](https://supabase.com/)
 - Set up [Vercel Blob](https://vercel.com/docs/storage/vercel-blob/quickstart)
 - Set up [Vercel KV](https://vercel.com/docs/storage/vercel-kv/quickstart)
@@ -62,9 +62,7 @@ Note that you'll need to:
 ## Credits
 
 
-- [sdxl-emoji](https://replicate.com/fofr/sdxl-emoji) - fine tuned SDXL based on Apple's emojis by [@fofrAI](https://twitter.com/fofrAI)
-- [prompt-classifier](https://replicate.com/fofr/prompt-classifier) - fine tuned llama-13b for determining toxicity by [@fofrAI](https://twitter.com/fofrAI)
-- [rembg](https://replicate.com/cjwbw/rembg) - remove images background model by [@chenxwh](https://github.com/chenxwh)
+- [OpenAI DALL-E 3](https://openai.com/dall-e-3/) - Image generation model
 - [Spirals](https://spirals.vercel.app/) - starter template and code examples by [@steventey](https://twitter.com/steventey)
 - [EmojiGen](https://github.com/cbh123/emoji) - original emoji generator by [@charliebholtz](https://twitter.com/charliebholtz)
 

@@ -1,11 +1,21 @@
 import { NextResponse } from "next/server"
-import { createAdminClient } from "@/lib/supabase"
+import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit } from "@/server/rate-limit"
 import { jwtVerify } from "jose"
 import { z } from "zod"
 import { nanoid } from "@/lib/utils"
 import OpenAI from 'openai'
-import Replicate from "replicate"
+import { v2 as cloudinary } from 'cloudinary' // Import Cloudinary SDK
+
+// Force Node.js runtime for this route
+export const runtime = 'nodejs';
+
+// Log env vars on module load (might not reflect runtime if loaded differently)
+console.log("Checking Cloudinary Env Vars on Load:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'Exists' : 'MISSING',
+  api_key: process.env.CLOUDINARY_API_KEY ? 'Exists' : 'MISSING',
+  api_secret: process.env.CLOUDINARY_API_SECRET ? 'Exists' : 'MISSING'
+});
 
 // Initialize OpenAI client
 if (!process.env.DALLE_API_TOKEN) {
@@ -15,232 +25,211 @@ const openai = new OpenAI({
   apiKey: process.env.DALLE_API_TOKEN,
 })
 
-// Re-initialize Replicate client
-if (!process.env.REPLICATE_API_TOKEN) {
-  console.warn('Warning: Missing environment variable: REPLICATE_API_TOKEN. Background removal will be skipped.')
+// Configure Cloudinary
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.warn("Cloudinary credentials missing. Background removal via Cloudinary will be skipped.")
 }
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN, // Ensure this token is in .env
-})
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
-// Re-define Replicate model version for background removal
-const rembgVersion = "cd8b61b1c413a87250504909356f8790a6c796d4401f13e15e5054d2c8569da0" // Check for latest version if needed
-
-const jwtSchema = z.object({
-  ip: z.string(),
-  isIOS: z.boolean(),
-})
+// No need for JWT check here anymore, Supabase auth handles it
+// const jwtSchema = z.object({ ... })
 
 export async function POST(request: Request) {
-  console.log("Emoji API route called (DALL-E generation + Replicate BG removal)")
-  
+  console.log("Emoji API route called (DALL-E + Cloudinary BG Removal + Auth)")
+  const supabase = createClient() // Use server client
+  let emojiId: string | null = null; 
+
   try {
+    // 1. Check User Authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error('Auth Error:', authError)
+      return NextResponse.json({ error: "Unauthorized: Please log in to generate emojis." }, { status: 401 })
+    }
+    console.log(`[User: ${user.id}] Request received.`);
+
     const body = await request.json()
-    console.log("Request body:", body)
-    
-    const { prompt, token } = body
+    const { prompt } = body // Only need prompt from body now
 
     if (!prompt) {
-      console.error("No prompt provided")
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    if (!token) {
-      console.error("No token provided")
-      return NextResponse.json({ error: "Token is required" }, { status: 401 })
+    emojiId = nanoid()
+    const originalPrompt = prompt
+    console.log(`[${emojiId}] [User: ${user.id}] Original prompt:`, originalPrompt)
+
+    // 2. Fetch User Profile & Check Credits
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('generation_credits, is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      console.error(`[${emojiId}] [User: ${user.id}] Error fetching profile:`, profileError)
+      return NextResponse.json({ error: "Could not retrieve user profile.", details: profileError.message }, { status: 500 })
     }
 
-    if (!process.env.API_SECRET) {
-      console.error("API_SECRET not set")
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    if (!profile) {
+       console.error(`[${emojiId}] [User: ${user.id}] Profile not found.`)
+       return NextResponse.json({ error: "User profile not found." }, { status: 404 })
     }
 
-    console.log("Verifying token...")
-    // Verify token
-    const verified = await jwtVerify(token, new TextEncoder().encode(process.env.API_SECRET))
-    const { ip, isIOS } = jwtSchema.parse(verified.payload)
-    console.log("Token verified successfully")
+    const isAdmin = profile.is_admin;
+    const availableCredits = profile.generation_credits;
 
-    // Check rate limit
-    console.log("Checking rate limit...")
-    const { remaining } = await checkRateLimit(ip, isIOS)
-    if (remaining <= 0) {
-      console.error("Rate limit exceeded")
-      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 })
+    console.log(`[${emojiId}] [User: ${user.id}] Generation Credits: ${availableCredits}, IsAdmin: ${isAdmin}`);
+
+    if (!isAdmin && availableCredits <= 0) {
+      console.log(`[${emojiId}] [User: ${user.id}] Insufficient credits.`);
+      return NextResponse.json({ error: "Insufficient generation credits." }, { status: 402 }); // 402 Payment Required
     }
 
-    const id = nanoid()
-    const originalPrompt = prompt  // Store the original prompt
-    console.log("Original prompt:", originalPrompt)
-    
     // --- OpenAI Moderation Check ---
     console.log("Checking prompt with OpenAI Moderation...")
     const moderationResponse = await openai.moderations.create({ input: originalPrompt })
     console.log("Moderation response:", moderationResponse)
     const moderationResult = moderationResponse.results[0]
     const isFlagged = moderationResult.flagged
-    // Simple safety rating: 10 if flagged, 0 otherwise (adjust as needed)
     const safetyRating = isFlagged ? 10 : 0
     console.log("Safety rating (0=OK, 10=Flagged):", safetyRating)
     // --- End OpenAI Moderation Check ---
 
-    const data = { 
-      id, 
-      prompt: originalPrompt,  // Use the original prompt
+    // --- Prepare initial data (including user_id) ---
+    const initialData = { 
+      id: emojiId, 
+      prompt: originalPrompt, 
       safety_rating: safetyRating,
-      created_at: new Date().toISOString(),
+      user_id: user.id, // Associate with the user
+      created_at: new Date().toISOString(), 
       is_flagged: isFlagged,
-      is_featured: false,
-      original_url: null,
+      is_featured: false, 
+      original_url: null, 
       no_background_url: null,
-      error: null,
-      status: 'pending' // Initial status
+      error: null, 
+      status: isFlagged ? 'flagged' : 'pending'
     }
-
-    // Create admin client
-    const supabaseAdmin = createAdminClient()
 
     if (isFlagged) {
-      console.log("Prompt flagged as inappropriate by OpenAI")
-      await supabaseAdmin.from('emoji').insert([{ ...data, is_flagged: true, status: 'flagged' }])
+      console.log(`[${emojiId}] [User: ${user.id}] Prompt flagged`)
+      await supabase.from('emoji').insert([initialData])
       return NextResponse.json({ error: "Inappropriate content detected" }, { status: 400 })
     }
-
-    // Create initial emoji record (without image URL yet)
-    console.log("Creating initial emoji record (pre-generation):", data)
-    const { data: initialEmojiData, error: insertError } = await supabaseAdmin
-      .from('emoji')
-      .insert([data])
-      .select()
-      .single()
     
-    if (insertError) {
-      console.error("Error inserting initial emoji record:", {
-        message: insertError.message, code: insertError.code, details: insertError.details, hint: insertError.hint,
-      })
-      return NextResponse.json({ error: "Failed to create emoji record", details: insertError.message }, { status: 500 })
-    }
-
-    if (!initialEmojiData) {
-      console.error("No initial emoji data returned after insert")
-      return NextResponse.json({ error: "Failed to create emoji record", details: "No data returned from database" }, { status: 500 })
-    }
-
-    console.log("Initial emoji record created successfully:", initialEmojiData)
-
     // --- DALL-E Image Generation ---
-    console.log("Starting DALL-E generation with prompt:", originalPrompt)
-    let imageUrl: string | null = null
-    let generationError: string | null = null
+    console.log(`[${emojiId}] [User: ${user.id}] Starting DALL-E generation...`)
+    let dalleImageUrl: string | null = null
     try {
-      // --- Update DALL-E Prompt for Sticker Style (no transparent bg) --- 
-      const dallePrompt = `${originalPrompt}, single emoji, sticker style, svg vector art`
-      console.log("Using DALL-E prompt:", dallePrompt)
-      // ---------------------------------------------------------------
-
+      const dallePrompt = `${originalPrompt}, single emoji, emoji style`
       const imageResponse = await openai.images.generate({
-        model: "dall-e-3", 
-        prompt: dallePrompt, // Use the modified prompt
-        n: 1,
-        size: "1024x1024", 
-        response_format: "url", 
+        model: "dall-e-3", prompt: dallePrompt, n: 1,
+        size: "1024x1024", response_format: "url",
       })
-      console.log("DALL-E response:", imageResponse)
-      imageUrl = imageResponse.data[0]?.url ?? null // Get the URL
-
-      if (!imageUrl) {
-         throw new Error("No image URL received from DALL-E")
-      }
-      console.log("DALL-E image generated successfully:", imageUrl)
-
+      dalleImageUrl = imageResponse.data[0]?.url ?? null
+      if (!dalleImageUrl) throw new Error("No image URL received from DALL-E")
+      console.log(`[${emojiId}] [User: ${user.id}] DALL-E image generated:`, dalleImageUrl)
     } catch (err) {
-      console.error("Error during DALL-E generation:", err)
-      generationError = err instanceof Error ? err.message : "Unknown DALL-E error"
-      // Insert record with error if generation fails
-      await supabaseAdmin.from('emoji').insert([{ ...data, error: generationError, status: 'failed' }]) // Add status
+      console.error(`[${emojiId}] [User: ${user.id}] Error during DALL-E generation:`, err)
+      const generationError = err instanceof Error ? err.message : "Unknown DALL-E error"
+      // Insert error record associated with user
+      await supabase.from('emoji').insert([{ ...initialData, error: generationError, status: 'failed' }])
       return NextResponse.json({ error: "Failed to generate image", details: generationError }, { status: 500 })
     }
-    // --- End DALL-E Image Generation ---
 
-    // --- Create/Update Emoji Record (with DALL-E URL, before background removal) ---
-    console.log("Upserting emoji record with DALL-E URL (status: processing_bg)...")
-    const { data: updatedEmojiData, error: upsertError } = await supabaseAdmin
+    // --- Insert Initial Record & Update DB status to processing_bg ---
+    console.log(`[${emojiId}] [User: ${user.id}] Inserting initial record / setting status to processing_bg`) 
+    const { error: initialInsertError } = await supabase
       .from('emoji')
-      // Update data before upsert: add DALL-E URL and set status
-      .upsert({ ...data, original_url: imageUrl, status: 'processing_bg' }) 
+      .insert([{ 
+        ...initialData, // Includes user_id, prompt, etc.
+        original_url: dalleImageUrl, 
+        status: 'processing_bg' 
+      }])
+      .select() // Need select to potentially catch conflict errors
+      .single() 
+
+    // Handle insertion errors (excluding duplicate key error 23505, which might happen in retries/edge cases)
+    if (initialInsertError && initialInsertError.code !== '23505') {
+        console.error(`[${emojiId}] [User: ${user.id}] Error inserting initial record before BG removal:`, initialInsertError);
+        // Return error if we couldn't even save the initial state
+        return NextResponse.json({ error: "Failed to save initial emoji data.", details: initialInsertError.message }, { status: 500 })
+    }
+
+    // --- Cloudinary Background Removal --- 
+    let cloudinaryResultUrl: string | null = null
+    try {
+      if (!dalleImageUrl) {
+        throw new Error("Assertion failed: dalleImageUrl is null or undefined before Cloudinary upload.");
+      }
+      console.log(`[${emojiId}] [User: ${user.id}] Checking process.env.CLOUDINARY_CLOUD_NAME directly:`, process.env.CLOUDINARY_CLOUD_NAME);
+      if (!cloudinary.config().cloud_name) {
+        throw new Error("Cloudinary is not configured. Skipping background removal.");
+      }
+      console.log(`[${emojiId}] [User: ${user.id}] Starting Cloudinary upload & background removal for:`, dalleImageUrl)
+      const uploadResult = await cloudinary.uploader.upload(dalleImageUrl, {
+        public_id: emojiId, folder: "ai-emoji", background_removal: 'cloudinary_ai',
+      })
+      cloudinaryResultUrl = uploadResult.secure_url
+      console.log(`[${emojiId}] [User: ${user.id}] Cloudinary background removal complete. URL:`, cloudinaryResultUrl)
+    } catch (err) {
+      console.error(`[${emojiId}] [User: ${user.id}] Error during Cloudinary background removal:`, err)
+      const bgRemovalError = err instanceof Error ? err.message : "Unknown Cloudinary background removal error"
+      await supabase.from('emoji').update({ error: bgRemovalError, status: 'failed' }).eq('id', emojiId)
+      const { data: failedData } = await supabase.from('emoji').select().eq('id', emojiId).single();
+      return NextResponse.json(failedData ?? { ...initialData, original_url: dalleImageUrl, error: bgRemovalError, status: 'failed' }, { status: 200 }); 
+    }
+
+    // --- Final Update to DB with Cloudinary URL and status generated ---
+    console.log(`[${emojiId}] [User: ${user.id}] Updating final record with Cloudinary URL and status generated...`)
+    const { data: finalEmojiData, error: finalUpdateError } = await supabase
+      .from('emoji')
+      .update({ no_background_url: cloudinaryResultUrl, status: 'generated', error: null })
+      .eq('id', emojiId)
       .select()
       .single()
 
-    if (upsertError) {
-      console.error("Error upserting emoji record with DALL-E URL:", {
-        message: upsertError.message, code: upsertError.code, details: upsertError.details, hint: upsertError.hint,
-      })
-       // If we can't save the result, return an error
-      return NextResponse.json({ error: "Failed to save initial generation result", details: upsertError.message }, { status: 500 })
+    if (finalUpdateError) {
+      console.error(`[${emojiId}] [User: ${user.id}] Error saving final record:`, finalUpdateError)
+      const { data: postBgData } = await supabase.from('emoji').select().eq('id', emojiId).single();
+      return NextResponse.json(postBgData ?? { ...initialData, original_url: dalleImageUrl, no_background_url: cloudinaryResultUrl, error: `DB update failed: ${finalUpdateError.message}`, status: 'generated' }, { status: 200 });
     }
-    console.log("Emoji record upserted with DALL-E URL:", updatedEmojiData)
-    // --- End Create/Update ---
-
-    // --- Trigger Replicate Background Removal (Asynchronous) ---
-    if (process.env.REPLICATE_API_TOKEN && imageUrl) {
-      try {
-        console.log("Triggering Replicate background removal for:", imageUrl)
-        // Construct the webhook URL (ensure NGROK_URL or VERCEL_URL and WEBHOOK_SECRET are set)
-        const webhookUrl = process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}/api/webhook/replicate`
-          : process.env.NGROK_URL 
-          ? `${process.env.NGROK_URL}/api/webhook/replicate`
-          : null
-
-        if (!webhookUrl) {
-          console.warn("Webhook URL not configured (VERCEL_URL or NGROK_URL). Cannot trigger background removal callback.")
-          // Update status to indicate BG removal failed
-          await supabaseAdmin.from('emoji').update({ status: 'failed', error: 'Webhook URL not configured' }).eq('id', id)
-        } else if (!process.env.WEBHOOK_SECRET) {
-           console.warn("WEBHOOK_SECRET not set. Cannot secure Replicate webhook.")
-            // Update status to indicate BG removal failed
-          await supabaseAdmin.from('emoji').update({ status: 'failed', error: 'Webhook secret not configured' }).eq('id', id)
-        } else {
-            const prediction = await replicate.predictions.create({
-              version: rembgVersion,
-              input: { image: imageUrl }, // Pass DALL-E image URL
-              webhook: `${webhookUrl}?id=${id}&secret=${process.env.WEBHOOK_SECRET}`, 
-              webhook_events_filter: ["completed"],
-            })
-            console.log("Replicate background removal prediction started:", prediction.id)
-            // Status is already 'processing_bg'
+    
+    // --- Decrement Credits (if not admin and successful so far) ---
+    if (!isAdmin) {
+        console.log(`[${emojiId}] [User: ${user.id}] Decrementing generation credits.`);
+        const { error: decrementError } = await supabase.rpc('decrement_credits', { p_user_id: user.id }); 
+        
+        if (decrementError) {
+            console.error(`[${emojiId}] [User: ${user.id}] Failed to decrement credits via RPC:`, decrementError)
+            // Log the error, but don't fail the request.
         }
-      } catch (err) {
-        console.error("Error triggering Replicate background removal:", err)
-        const bgErrorMsg = err instanceof Error ? err.message : "BG removal trigger failed"
-        // Update status and error in DB
-        await supabaseAdmin.from('emoji').update({ error: bgErrorMsg, status: 'failed' }).eq('id', id)
-      }
-    } else {
-      console.log("Skipping Replicate background removal (missing REPLICATE_API_TOKEN or DALL-E image URL).")
-      // Update status to indicate BG removal was skipped/failed
-       await supabaseAdmin.from('emoji').update({ status: 'failed', error: 'BG removal skipped (config/image missing)' }).eq('id', id)
     }
-    // --- End Background Removal Trigger ---
-
-    // Return the data including the DALL-E generated URL
-    // The no_background_url will be updated later by the webhook
-    return NextResponse.json(updatedEmojiData) // Return the record as it is now (with DALL-E URL)
+    
+    console.log(`[${emojiId}] [User: ${user.id}] Process complete:`, finalEmojiData)
+    return NextResponse.json(finalEmojiData)
 
   } catch (error) {
-    console.error("Unhandled error in emoji generation:", error)
-    if (error instanceof Error) {
-      console.error("Error details:", { name: error.name, message: error.message, stack: error.stack })
-       // Check for specific JOSE errors if the error object has a 'code' property
-       if ('code' in error && (error.code === 'ERR_JWT_INVALID' || error.code === 'ERR_JWS_INVALID')) {
-          return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
-       }
+    // --- Outer Error Handling --- 
+    console.error(`[${emojiId || 'UNKNOWN'}] Unhandled error in emoji generation:`, error)
+    const errorMsg = error instanceof Error ? error.message : "Unknown error"
+    if (emojiId && supabase) {
+      try {
+        await supabase.from('emoji').update({ status: 'failed', error: `Unhandled: ${errorMsg}`.slice(0, 255) }).eq('id', emojiId)
+      } catch (dbError) {
+        console.error(`[${emojiId}] Failed to update DB status after unhandled error:`, dbError)
+      }
     }
-    // Check for Zod validation errors
+    // Don't check JWT errors here, handled by supabase.auth.getUser()
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid request body", details: error.errors }, { status: 400 })
     }
-    // General internal server error
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error", details: errorMsg }, { status: 500 })
   }
 } 

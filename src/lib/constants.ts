@@ -36,3 +36,5 @@ export const FEATURED_OG_IMAGES = [
   "https://aaah0mnbncqtinas.public.blob.vercel-storage.com/wMUSzgi-no-background-PNouROiiYoLxSOls0Gy7K3JouuOQZQ.png",
   "https://aaah0mnbncqtinas.public.blob.vercel-storage.com/xRlqqoQ-no-background-xQEeyhNpuSDLyuJudbmgxDQBsUhIkE.png",
 ]
+
+export const BODY_PADDING = "px-4 sm:px-6 lg:px-8"

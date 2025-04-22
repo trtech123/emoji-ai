@@ -1,12 +1,13 @@
 import { APP_STORE_URL, PROD_URL } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { Github } from "lucide-react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Image from "next/image"
-import Link from "next/link"
 import { Providers } from "./_components/providers"
 import "./globals.css"
+import { Toaster } from "react-hot-toast"
+import AuthButton from "./_components/auth-button"
+import RightSidebar from "./_components/right-sidebar"
+import { BODY_PADDING } from "@/lib/constants"
 
 /**
  * Opt out of caching for all data requests in the route segment. Based on the docs,
@@ -28,13 +29,11 @@ import "./globals.css"
 export const dynamic = "force-dynamic"
 export const runtime = "edge"
 
-const BODY_PADDING = "px-4 sm:px-6"
-
 const inter = Inter({ subsets: ["latin"] })
 
 export function generateMetadata(): Metadata {
   const title = "AI Emoji Generator"
-  const description = "Turn your ideas into emojis in seconds. Generate your favorite Slack emojis with just one click."
+  const description = "הפוך את הרעיונות שלך לאימוג'ים תוך שניות. צור את אימוג'י ה-Slack האהובים עליך בלחיצה אחת."
 
   return {
     metadataBase: new URL(PROD_URL),
@@ -49,7 +48,7 @@ export function generateMetadata(): Metadata {
       description,
       url: PROD_URL,
       siteName: "emojis.sh",
-      locale: "en_US",
+      locale: "he_IL",
       type: "website",
     },
     twitter: {
@@ -63,20 +62,27 @@ export function generateMetadata(): Metadata {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={cn(inter.className, "antialiased bg-gray-100")}>
-        <header
-          className={cn(
-            "top-0 sticky z-20 w-full py-3 bg-gray-100 flex flex-row flex-nowrap justify-between max-w-5xl mx-auto h-14 items-stretch animate-in fade-in slide-in-from-top-4 duration-1000 ease-in-out",
-            BODY_PADDING
-          )}
-        >
-          <div></div>
-          <div></div>
-        </header>
-        <main className={cn("min-h-screen flex items-stretch flex-col pb-28 max-w-5xl mx-auto", BODY_PADDING)}>
-          <Providers>{children}</Providers>
-        </main>
+    <html lang="he" dir="rtl" suppressHydrationWarning>
+      <body className={cn("antialiased font-sans scroll-smooth", inter.className)}>
+        <div className="flex flex-row min-h-screen">
+          <RightSidebar />
+          <div className="flex flex-col flex-grow">
+            <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
+              <div className={cn("container flex h-14 items-center", BODY_PADDING)}>
+                <div className="flex-1">
+                  <span className="font-bold text-lg"> אימוג'י AI</span>
+                </div>
+                <nav className="flex items-center space-x-2">
+                  <AuthButton />
+                </nav>
+              </div>
+            </header>
+            <main className={cn("flex-grow flex items-stretch flex-col", BODY_PADDING)}>
+              <Providers>{children}</Providers>
+            </main>
+          </div>
+        </div>
+        <Toaster position="bottom-left" />
       </body>
     </html>
   )
