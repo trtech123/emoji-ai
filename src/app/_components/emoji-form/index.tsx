@@ -28,7 +28,7 @@ interface Profile {
   is_admin: boolean
 }
 
-const DEFAULT_GENERATION_CREDITS = 5;
+const DEFAULT_GENERATION_CREDITS = 1;
 
 interface EmojiFormProps {
   initialPrompt?: string
@@ -40,15 +40,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [generatedEmoji, setGeneratedEmoji] = useState<{
-    id: string
-    status: string
-    prompt: string
-    imageUrl?: string
-    error?: string
-  } | null>(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [showOutOfTokensModal, setShowOutOfTokensModal] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
@@ -183,16 +175,13 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
     setIsSubmitting(true);
     setError(null);
-    setGeneratedEmoji(null);
     setShowLoginModal(false);
-    setShowOutOfTokensModal(false);
 
     const isAdmin = userProfile.is_admin;
     const availableCredits = userProfile.generation_credits;
 
     if (!isAdmin && availableCredits <= 0) {
       setError("נגמרו לך קרדיטי היצירה.");
-      setShowOutOfTokensModal(true);
       toast.error("אין לך מספיק קרדיטים.");
       setIsSubmitting(false);
       return;
@@ -214,8 +203,8 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
       if (response.status === 402) {
         setError("נגמרו לך קרדיטי היצירה.");
-        setShowOutOfTokensModal(true);
         toast.error("אין לך מספיק קרדיטים.");
+        setIsSubmitting(false); 
         return;
       }
 
@@ -226,33 +215,18 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
       const data = await response.json();
 
-      if (!data || !data.id || data.status !== "generated") {
+      if (!data || !data.id) {
         throw new Error(
-          data?.error || "היצירה הצליחה אך פורמט התגובה שגוי."
+          data?.error || "היצירה הצליחה אך לא התקבל מזהה אימוג'י."
         );
       }
 
       if (!isAdmin) {
-        const { error: decrementError } = await supabase.rpc('decrement_credits', { p_user_id: user.id });
-
-        if (decrementError) {
-          console.error("Failed to decrement credits:", decrementError);
-          toast.error("שגיאה בעדכון ספירת הקרדיטים. אנא פנה לתמיכה.");
-        } else {
-          setUserProfile(prev => prev ? { ...prev, generation_credits: Math.max(0, prev.generation_credits - 1) } : null);
-          toast.success("אימוג'י נוצר! קרדיט נוצל.");
-        }
-      } else {
-         toast.success("אימוג'י נוצר!");
+        setUserProfile(prev => prev ? { ...prev, generation_credits: Math.max(0, prev.generation_credits - 1) } : null);
       }
 
-      setGeneratedEmoji({
-        id: data.id,
-        status: "generated",
-        prompt: data.prompt,
-        imageUrl: data.no_background_url,
-        error: undefined,
-      });
+      toast.success("אימוג'י נוצר! מעביר אותך לדף האימוג'י...");
+      router.push(`/p/${data.id}`);
 
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "אירעה שגיאה לא ידועה.";
@@ -304,44 +278,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         <p className="text-sm text-destructive mt-2">{error}</p>
       )}
 
-      {(isSubmitting || generatedEmoji) && (
-        <div className="flex flex-col items-center gap-4 pt-6 mt-6 border-t">
-          {isSubmitting && !generatedEmoji && (
-            <>
-              <Skeleton className="h-48 w-48 rounded-lg" />
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>יוצר... (DALL-E &gt; Cloudinary)</span>
-              </div>
-            </>
-          )}
-          
-          {generatedEmoji && (
-            <>
-              {generatedEmoji.status === 'generated' && generatedEmoji.imageUrl && (
-                <a 
-                  href={generatedEmoji.imageUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  title="לחץ לפתיחת תמונה מלאה"
-                >
-                  <img
-                    src={generatedEmoji.imageUrl}
-                    alt={generatedEmoji.prompt}
-                    className="w-48 h-48 object-contain rounded-lg bg-secondary p-2 cursor-pointer hover:opacity-80 transition-opacity"
-                  />
-                </a>
-              )}
-              {generatedEmoji.status === 'failed' && generatedEmoji.error && (
-                <p className="text-sm text-destructive mt-2 text-center">
-                  <span className="font-semibold">שגיאה:</span> {generatedEmoji.error}
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -357,22 +293,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
                theme="dark" 
                redirectTo={typeof window !== 'undefined' ? window.location.origin : undefined}
             />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showOutOfTokensModal} onOpenChange={setShowOutOfTokensModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>אזלו הקרדיטים</DialogTitle>
-            <DialogDescription>
-              נגמרו לך קרדיטי היצירה החינמיים או שרכשת. לרכישת קרדיטים נוספים, לחץ על הכפתור.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center pt-4">
-            <Button asChild>
-              <Link href="/billing">רכוש קרדיטים נוספים</Link>
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

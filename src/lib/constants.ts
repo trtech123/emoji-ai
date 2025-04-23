@@ -1,10 +1,7 @@
 export const PROD_URL = "https://emojis.sh"
 
-console.log("Environment variables:", {
-  NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
-  NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
-  NGROK_URL: process.env.NGROK_URL
-})
+export const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV
+export const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"

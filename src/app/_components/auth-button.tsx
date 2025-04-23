@@ -106,8 +106,6 @@ export default function AuthButton() {
     // await supabase.auth.signOut()
   }
 
-  console.log("[AuthButton] Rendering, user state:", { userId: user?.id });
-
   if (user) {
     return (
       <div className="flex items-center gap-2">

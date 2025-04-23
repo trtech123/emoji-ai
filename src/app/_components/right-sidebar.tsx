@@ -18,8 +18,8 @@ import AuthButton from './auth-button'
 export default function RightSidebar() {
   // Placeholder links - replace with actual paths or functionality
   const sidebarItems = [
-    { name: 'יצירה', href: '#', icon: PlusSquare },
-    { name: 'חיפוש', href: '#', icon: Search },
+    { name: 'יצירה', href: '/', icon: PlusSquare },
+    { name: 'חיפוש', href: '/search', icon: Search },
     { name: 'משוב', href: '#', icon: MessageSquare, external: true },
   ]
 
@@ -31,7 +31,7 @@ export default function RightSidebar() {
   ]
 
   return (
-    <aside className="w-64 border-r bg-background p-4 flex flex-col flex-shrink-0">
+    <aside className="w-64 border-r bg-neutral-50 dark:bg-neutral-950 p-4 flex flex-col flex-shrink-0 sticky top-[56px] z-30 h-[calc(100vh-56px)] overflow-y-auto">
       <nav className="flex-grow">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-2">כללי</h2>
         <ul>

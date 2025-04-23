@@ -34,8 +34,8 @@ export function PageContent() {
         />
       </section>
 
-      {/* Form Section */}
-      <section className="w-full max-w-2xl flex flex-col items-center gap-4 mb-16">
+      {/* Form Section - Make sticky below header */}
+      <section className="w-full max-w-2xl flex flex-col items-center gap-4 mb-16 sticky top-[56px] z-20 bg-background py-4">
         {/* Pass prompt state and setter to the form */}
         <EmojiForm initialPrompt={prompt} key={prompt} /> 
         {/* Example Prompts Component - Pass setter to update prompt */}
