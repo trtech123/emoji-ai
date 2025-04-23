@@ -143,7 +143,7 @@ export async function POST(request: Request) {
       .select('generation_credits, is_admin')
       .eq('id', user.id)
       .single()
-
+//
     if (profileError) {
       return NextResponse.json({ error: "Could not retrieve user profile.", details: profileError.message }, { status: 500 })
     }
