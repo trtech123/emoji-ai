@@ -58,8 +58,16 @@ const replicate = new Replicate({
 console.log("[DEBUG] Initialized Replicate SDK");
 
 // --- ADD Translate Client Initialization ---
-// Assumes ADC or service account used by VertexAI is sufficient
-const translate = new Translate();
+const translateCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+if (!translateCredentials) {
+  console.error("Missing Google Cloud credentials environment variable: GOOGLE_APPLICATION_CREDENTIALS_JSON");
+  throw new Error("Missing Google Cloud credentials configuration");
+}
+
+const translate = new Translate({
+  credentials: JSON.parse(translateCredentials),
+  projectId: project // Use the same project ID as Vertex AI
+});
 console.log("[DEBUG] Initialized Google Cloud Translate V2 Client");
 
 // No need for JWT check here anymore, Supabase auth handles it
