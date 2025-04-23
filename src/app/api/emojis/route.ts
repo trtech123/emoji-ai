@@ -21,8 +21,16 @@ export const runtime = 'nodejs';
 // if (!process.env.GEMINI_API_KEY) { ... }
 // const genAI_apiKey = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- ADD Vertex AI Initialization using @google/genai ---
-// Use names from user's .env
+// Check for credentials first since both services will need it
+const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+if (!credentials) {
+  console.error("Missing Google Cloud credentials environment variable: GOOGLE_APPLICATION_CREDENTIALS_JSON");
+  throw new Error("Missing Google Cloud credentials configuration");
+}
+
+// Parse credentials once to avoid doing it multiple times
+const parsedCredentials = JSON.parse(credentials);
+
 if (!process.env.GOOGLE_PROJECT_ID) { 
   console.error("Missing Vertex AI environment variable: GOOGLE_PROJECT_ID");
   throw new Error("Missing Vertex AI Project ID configuration"); 
@@ -31,11 +39,20 @@ if (!process.env.GOOGLE_LOCATION) {
   console.error("Missing Vertex AI environment variable: GOOGLE_LOCATION");
   throw new Error("Missing Vertex AI Location configuration"); 
 }
-const project = process.env.GOOGLE_PROJECT_ID; // Use user's var name
-const location = process.env.GOOGLE_LOCATION; // Use user's var name
+const project = process.env.GOOGLE_PROJECT_ID;
+const location = process.env.GOOGLE_LOCATION;
 
-// Initialize with Vertex AI configuration using @google/genai
-// Assumes ADC or service account authentication (e.g., GOOGLE_APPLICATION_CREDENTIALS) is configured
+// Initialize with explicit auth
+const auth = {
+  credentials: parsedCredentials,
+  projectId: project,
+  scopes: [
+    'https://www.googleapis.com/auth/cloud-platform',
+    'https://www.googleapis.com/auth/cloud-translation'
+  ]
+};
+
+// Initialize Vertex AI
 const genAI = new GoogleGenAI({
     vertexai: true,
     project: project,
@@ -57,17 +74,8 @@ const replicate = new Replicate({
 });
 console.log("[DEBUG] Initialized Replicate SDK");
 
-// --- ADD Translate Client Initialization ---
-const translateCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-if (!translateCredentials) {
-  console.error("Missing Google Cloud credentials environment variable: GOOGLE_APPLICATION_CREDENTIALS_JSON");
-  throw new Error("Missing Google Cloud credentials configuration");
-}
-
-const translate = new Translate({
-  credentials: JSON.parse(translateCredentials),
-  projectId: project // Use the same project ID as Vertex AI
-});
+// Initialize Translate with explicit auth
+const translate = new Translate(auth);
 console.log("[DEBUG] Initialized Google Cloud Translate V2 Client");
 
 // No need for JWT check here anymore, Supabase auth handles it
