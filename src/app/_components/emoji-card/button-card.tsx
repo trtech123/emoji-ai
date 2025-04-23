@@ -61,10 +61,12 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
 
   return (
     <div className="group relative aspect-square w-full overflow-hidden rounded-xl bg-gray-100">
-      <img
+      <Image
         src={imageUrl}
         alt={prompt}
-        className="h-full w-full object-contain p-8 transition-transform duration-200 group-hover:scale-110"
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className="object-contain p-8 transition-transform duration-200 group-hover:scale-110"
       />
       <div
         className={cn(

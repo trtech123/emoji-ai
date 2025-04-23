@@ -18,7 +18,7 @@ export function PageContent() {
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center mt-12 md:mt-16 lg:mt-20">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4">
-          <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text">אימוג'י</span> AI
+          <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text">אימוג&apos;י</span> AI
         </h1>
         <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8">
           נוצר <span className="font-semibold text-foreground">בשבילכם</span> על ידכם
@@ -26,7 +26,7 @@ export function PageContent() {
         {/* Hero Image - Point to the correct file */}
         <Image 
           src="/emoji-showcase.png" // Updated path
-          alt="תצוגת אימוג'ים שנוצרו על ידי AI" // Translated Alt text
+          alt="תצוגת אימוג&apos;ים שנוצרו על ידי AI" // Translated Alt text
           width={350} // Halved from 700
           height={150} // Halved from 300
           className="rounded-lg relative translate-x-5" 

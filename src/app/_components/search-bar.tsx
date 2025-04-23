@@ -34,25 +34,25 @@ export function SearchBar({ className }: SearchBarProps) {
   const [searchValue, setSearchValue] = useState(initialQuery);
 
   // Function to update URL query parameter
-  const updateQueryParam = (query: string) => {
+  const updateQueryParam = useCallback((query: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (query) {
       params.set('q', query);
     } else {
       params.delete('q');
     }
-    // Use replace instead of push if we are already on the search page
-    // to avoid polluting browser history for every keystroke
     if (pathname === '/search') {
       router.replace(`/search?${params.toString()}`);
     } else {
-      // If anywhere else, navigate to search page
       router.push(`/search?${params.toString()}`);
     }
-  };
+  }, [searchParams, router, pathname]);
 
   // Debounced version of the update function
-  const debouncedUpdateQueryParam = useCallback(debounce(updateQueryParam, 300), [searchParams, router, pathname]);
+  const debouncedUpdateQueryParam = useCallback(
+    debounce((query: string) => updateQueryParam(query), 300),
+    [updateQueryParam]
+  );
 
   // Handle input change
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

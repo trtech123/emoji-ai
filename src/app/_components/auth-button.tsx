@@ -135,7 +135,7 @@ export default function AuthButton() {
         <DialogHeader>
           <DialogTitle>התחברות או הרשמה</DialogTitle>
           <DialogDescription>
-            התחבר כדי ליצור אימוג'ים.
+            התחבר כדי ליצור אימוג&apos;ים.
           </DialogDescription>
         </DialogHeader>
         <div className="pt-4">

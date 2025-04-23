@@ -150,7 +150,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     }
 
     if (!user) {
-      setError("אנא התחבר כדי ליצור אימוג\'ים.");
+      setError("אנא התחבר כדי ליצור אימוג&apos;ים.");
       setShowLoginModal(true);
       toast.error("אנא התחבר תחילה.");
       return;
@@ -217,7 +217,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
       if (!data || !data.id) {
         throw new Error(
-          data?.error || "היצירה הצליחה אך לא התקבל מזהה אימוג'י."
+          data?.error || "היצירה הצליחה אך לא התקבל מזהה אימוג&apos;י."
         );
       }
 
@@ -225,7 +225,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         setUserProfile(prev => prev ? { ...prev, generation_credits: Math.max(0, prev.generation_credits - 1) } : null);
       }
 
-      toast.success("אימוג'י נוצר! מעביר אותך לדף האימוג'י...");
+      toast.success("אימוג&apos;י נוצר! מעביר אותך לדף האימוג&apos;י...");
       router.push(`/p/${data.id}`);
 
     } catch (err) {
@@ -263,7 +263,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
           disabled={isSubmitting || isLoadingProfile}
           size="icon"
           className="absolute bottom-3 left-3 rounded-lg"
-          aria-label="צור אימוג'י"
+          aria-label="צור אימוג&apos;י"
         >
           {isSubmitting || isLoadingProfile ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -283,7 +283,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
           <DialogHeader>
             <DialogTitle>נדרשת התחברות</DialogTitle>
             <DialogDescription>
-              אנא התחבר או הירשם כדי ליצור אימוג'ים.
+              אנא התחבר או הירשם כדי ליצור אימוג&apos;ים.
             </DialogDescription>
           </DialogHeader>
           <div className="pt-4">

@@ -34,7 +34,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export function generateMetadata(): Metadata {
   const title = "AI Emoji Generator"
-  const description = "הפוך את הרעיונות שלך לאימוג'ים תוך שניות. צור את אימוג'י ה-Slack האהובים עליך בלחיצה אחת."
+  const description = "הפוך את הרעיונות שלך לאימוג&apos;ים תוך שניות. צור את אימוג&apos;י ה-Slack האהובים עליך בלחיצה אחת."
 
   return {
     metadataBase: new URL(PROD_URL),
@@ -71,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
               <div className={cn("container flex h-14 items-center gap-4", BODY_PADDING)}>
                 <div className="flex-none">
-                  <span className="font-bold text-lg"> אימוג'י AI</span>
+                  <span className="font-bold text-lg"> אימוג&apos;י AI</span>
                 </div>
                 <div className="flex-grow px-4">
                   <SearchBar className="max-w-xl mx-auto" />

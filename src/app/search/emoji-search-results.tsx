@@ -55,7 +55,7 @@ export function EmojiSearchResults() {
       }
       {query && (
         <h2 className="text-xl font-semibold text-center px-4 mb-6">
-          תוצאות חיפוש עבור: "{query}"
+          תוצאות חיפוש עבור: &quot;{query}&quot;
         </h2>
       )}
 
@@ -104,7 +104,7 @@ export function EmojiSearchResults() {
       {!isLoading && !error && emojis.length === 0 && (
         <p className="text-muted-foreground text-center px-4">
           {query 
-            ? `לא נמצאו תוצאות עבור "${query}".` 
+            ? `לא נמצאו תוצאות עבור &quot;${query}&quot;.` 
             : "התחל לחפש אימוג׳י." // Initial state message
           }
         </p>
