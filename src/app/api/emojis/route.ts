@@ -29,7 +29,14 @@ if (!credentials) {
 }
 
 // Parse credentials once to avoid doing it multiple times
-const parsedCredentials = JSON.parse(credentials);
+let parsedCredentials;
+try {
+  parsedCredentials = JSON.parse(credentials);
+  console.log("[DEBUG] Successfully parsed Google Cloud credentials from environment variable");
+} catch (e) {
+  console.error("Failed to parse Google Cloud credentials JSON:", e);
+  throw new Error("Invalid Google Cloud credentials JSON format");
+}
 
 if (!process.env.GOOGLE_PROJECT_ID) { 
   console.error("Missing Vertex AI environment variable: GOOGLE_PROJECT_ID");
@@ -75,7 +82,10 @@ const replicate = new Replicate({
 console.log("[DEBUG] Initialized Replicate SDK");
 
 // Initialize Translate with explicit auth
-const translate = new Translate(auth);
+const translate = new Translate({
+  credentials: parsedCredentials,
+  projectId: parsedCredentials.project_id // Explicitly set project ID from credentials
+});
 console.log("[DEBUG] Initialized Google Cloud Translate V2 Client");
 
 // No need for JWT check here anymore, Supabase auth handles it
