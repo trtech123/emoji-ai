@@ -14,6 +14,10 @@ import Replicate from "replicate";
 // ADD: Google Cloud Translate Client
 import { Translate } from '@google-cloud/translate/build/src/v2';
 
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+
 // Force Node.js runtime for this route
 export const runtime = 'nodejs';
 
@@ -33,6 +37,13 @@ let parsedCredentials;
 try {
   parsedCredentials = JSON.parse(credentials);
   console.log("[DEBUG] Successfully parsed Google Cloud credentials from environment variable");
+
+  // Write credentials JSON to a temp file for ADC
+  const gcpCredPath = path.join(os.tmpdir(), 'gcp-credentials.json');
+  fs.writeFileSync(gcpCredPath, JSON.stringify(parsedCredentials), 'utf8');
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = gcpCredPath;
+  console.log(`[DEBUG] Wrote credentials JSON to ${gcpCredPath}`);
+
 } catch (e) {
   console.error("Failed to parse Google Cloud credentials JSON:", e);
   throw new Error("Invalid Google Cloud credentials JSON format");
@@ -49,21 +60,19 @@ if (!process.env.GOOGLE_LOCATION) {
 const project = process.env.GOOGLE_PROJECT_ID;
 const location = process.env.GOOGLE_LOCATION;
 
-// Initialize with explicit auth
-const auth = {
-  credentials: parsedCredentials,
-  projectId: project,
-  scopes: [
-    'https://www.googleapis.com/auth/cloud-platform',
-    'https://www.googleapis.com/auth/cloud-translation'
-  ]
-};
-
-// Initialize Vertex AI
+// Initialize Vertex AI client with explicit auth options
 const genAI = new GoogleGenAI({
-    vertexai: true,
-    project: project,
-    location: location,
+  vertexai: true,
+  project: project,
+  location: location,
+  googleAuthOptions: {
+    credentials: parsedCredentials,
+    projectId: project,
+    scopes: [
+      'https://www.googleapis.com/auth/cloud-platform',
+      'https://www.googleapis.com/auth/cloud-translation'
+    ]
+  }
 });
 console.log(`[DEBUG] Initialized @google/genai SDK for Vertex AI (Project: ${project}, Location: ${location})`);
 
@@ -420,3 +429,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error", details: errorMsg }, { status: 500 })
   }
 } 
+
+// After parsing JSON credentials, write to a temp file and set GOOGLE_APPLICATION_CREDENTIALS
+const gcpCredPath = path.join(os.tmpdir(), 'gcp_credentials.json')
+fs.writeFileSync(gcpCredPath, credentials)
+process.env.GOOGLE_APPLICATION_CREDENTIALS = gcpCredPath
+console.log(`[DEBUG] Wrote Google credentials JSON to: ${gcpCredPath}`) 
