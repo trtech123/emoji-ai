@@ -1,4 +1,4 @@
-export const PROD_URL = "https://emojis.sh"
+export const PROD_URL = "https://emoji-ai-delta.vercel.app"
 
 export const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV
 export const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL
@@ -6,7 +6,7 @@ export const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? (
   process.env.NEXT_PUBLIC_VERCEL_URL 
     ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
-    : 'http://localhost:3000'
+    : PROD_URL
 )
 
 export const AUTH_CALLBACK_URL = `${SITE_URL}/auth/callback`
