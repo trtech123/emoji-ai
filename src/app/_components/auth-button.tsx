@@ -135,7 +135,20 @@ export default function AuthButton() {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (open) {
+        // Debug info when dialog opens
+        console.log('[Auth Dialog Debug] Environment & URLs:', {
+          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          SITE_URL,
+          AUTH_CALLBACK_URL,
+          currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
+          currentURL: typeof window !== 'undefined' ? window.location.href : 'SSR',
+        });
+        toast(`Debug - Current URL: ${typeof window !== 'undefined' ? window.location.origin : 'SSR'}`);
+      }
+      setIsOpen(open);
+    }}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm">
           <LogIn className="mr-2 h-4 w-4" /> התחבר
@@ -153,10 +166,9 @@ export default function AuthButton() {
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
             theme="dark"
-            redirectTo="https://emoji-ai-delta.vercel.app/auth/callback"
-            providers={['google']}
-            view="sign_in"
-            showLinks={false}
+            providers={['github']}
+            onlyThirdPartyProviders
+            redirectTo={typeof window !== 'undefined' ? window.location.origin : SITE_URL}
           />
         </div>
       </DialogContent>

@@ -6,12 +6,12 @@ import { SITE_URL } from '@/lib/constants'
 export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
+  const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
-  // Force production URL in callback
-  const baseUrl = 'https://emoji-ai-delta.vercel.app'
+  // Use the request's origin in development, fallback to SITE_URL in production
+  const baseUrl = process.env.NODE_ENV === 'development' ? origin : SITE_URL
   
   console.log('[Auth Callback] Debug:', {
     requestUrl: request.url,
@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     next,
     SITE_URL,
     baseUrl,
+    origin,
     finalRedirectUrl: `${baseUrl}${next}`
   });
 
