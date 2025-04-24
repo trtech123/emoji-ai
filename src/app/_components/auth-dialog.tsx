@@ -26,7 +26,7 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
         <DialogHeader className="space-y-3">
           <DialogTitle className="text-2xl sm:text-xl">התחברות או הרשמה</DialogTitle>
           <DialogDescription className="text-base sm:text-sm">
-            התחבר כדי ליצור אימוג&apos;ים.
+            התחבר כדי ליצור אימוג׳ים.
           </DialogDescription>
         </DialogHeader>
         <div className="flex-grow flex items-center justify-center py-6 sm:py-4">

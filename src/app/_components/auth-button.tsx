@@ -18,90 +18,46 @@ export function AuthButton() {
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    // Add debug logging
-    console.log("[AuthButton] Debug URLs:", {
-      SITE_URL,
-      AUTH_CALLBACK_URL,
-      currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
-    });
-    
-    console.log("[AuthButton] useEffect running - Setting up listener");
-    // Confirm execution context
-    if (typeof window === 'undefined') {
-      console.error("[AuthButton] ERROR: useEffect running on server?");
-    } else {
-      console.log("[AuthButton] useEffect running in browser context.");
-    }
+    let initialCheckDone = false;
 
-    let initialCheckDone = false; // Flag to prevent redundant checks
-
-    // Function to check user and update state
     const checkUser = async () => {
-      console.log("[AuthButton] Explicitly checking user state...");
       const { data: { user: currentUser }, error } = await supabase.auth.getUser();
       if (error) {
         console.error("[AuthButton] Error in checkUser:", error);
       }
-      console.log("[AuthButton] checkUser result:", { userId: currentUser?.id });
-      setUser(currentUser); // Update state based on explicit check
+      setUser(currentUser);
       initialCheckDone = true; 
     };
 
-    // Listener for auth state changes from Supabase
+    const handleAuthChange = async (user: User | null) => {
+        setUser(user);
+        if (user) {
+            setIsOpen(false);
+        }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("[AuthButton] onAuthStateChange triggered:", { _event, userId: session?.user?.id });
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        console.log("[AuthButton] User detected via onAuthStateChange, closing modal if open.");
-        setIsOpen(false);
-        // Show the redirect URL in a toast
-        toast.success(`Redirecting to: ${AUTH_CALLBACK_URL}`);
-      }
+        handleAuthChange(session?.user ?? null);
     });
 
-    // Initial check on mount
-    if (!initialCheckDone) {
-       checkUser();
-    }
+    supabase.auth.getUser().then(({ data }) => {
+        supabase.auth.getSession().then(({ data: { session }}) => {
+            if(!session) {
+                handleAuthChange(data.user);
+            }
+        })
+    });
 
-    // Add visibility change listener as a fallback
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log("[AuthButton] App became visible, re-checking user state...");
-        // Call getUser and log the full response
-        supabase.auth.getUser().then(response => {
-          console.log("[AuthButton] getUser response on visibility change:", response);
-          if(response.error) {
-            console.error("[AuthButton] Error from getUser on visibility change:", response.error);
-          }
-          setUser(response.data.user ?? null);
-        }).catch(err => {
-          console.error("[AuthButton] Exception during getUser on visibility change:", err);
-        });
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Cleanup function
     return () => {
-      console.log("[AuthButton] useEffect cleanup - Unsubscribing and removing listener");
-      subscription.unsubscribe();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+        subscription.unsubscribe();
     };
-  }, [supabase.auth]); // Dependency array remains the same
+  }, [supabase.auth]);
 
   const handleSignOut = async () => {
-    console.log("[AuthButton] handleSignOut called - using Server Action");
     startTransition(async () => {
       const result = await signOutAction();
       if (result?.error) {
         toast.error(`Sign out failed: ${result.error}`);
-        console.error("[AuthButton] Server Action sign out failed:", result.error);
-      } else {
-        console.log("[AuthButton] Server Action sign out successful (client-side perspective)");
-        // No need to manually call setUser(null) here,
-        // the redirect and subsequent page load/auth state listener will handle it.
       }
     });
   }
@@ -129,19 +85,7 @@ export function AuthButton() {
       <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>
         <LogIn className="mr-2 h-4 w-4" /> התחבר
       </Button>
-      <AuthDialog isOpen={isOpen} onOpenChange={(open) => {
-        if (open) {
-          console.log('[Auth Dialog Debug] Environment & URLs:', {
-            NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-            SITE_URL,
-            AUTH_CALLBACK_URL,
-            currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
-            currentURL: typeof window !== 'undefined' ? window.location.href : 'SSR',
-          });
-          toast(`Debug - Current URL: ${typeof window !== 'undefined' ? window.location.origin : 'SSR'}`);
-        }
-        setIsOpen(open);
-      }} />
+      <AuthDialog isOpen={isOpen} onOpenChange={setIsOpen} />
     </>
   )
 } 
