@@ -164,11 +164,31 @@ export default function AuthButton() {
         <div className="pt-4">
           <Auth
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#404040',
+                    brandAccent: '#2d2d2d'
+                  }
+                }
+              },
+              style: {
+                button: {
+                  flex: 1,
+                  width: '100%',
+                  justifyContent: 'center',
+                  borderRadius: '6px'
+                }
+              }
+            }}
             theme="dark"
-            providers={['github']}
+            providers={['google']}
             onlyThirdPartyProviders
             redirectTo={typeof window !== 'undefined' ? window.location.origin : SITE_URL}
+            view="sign_in"
+            showLinks={false}
           />
         </div>
       </DialogContent>
