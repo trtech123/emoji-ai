@@ -54,7 +54,7 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
             theme="dark"
             providers={['google']}
             onlyThirdPartyProviders
-            redirectTo={SITE_URL}
+            redirectTo={`${SITE_URL}/auth/callback`}
             view="sign_in"
             showLinks={false}
           />

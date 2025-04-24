@@ -6,33 +6,28 @@ import { SITE_URL } from '@/lib/constants'
 export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
-
-  // Use the request's origin in development, fallback to SITE_URL in production
-  const baseUrl = process.env.NODE_ENV === 'development' ? origin : SITE_URL
   
   console.log('[Auth Callback] Debug:', {
     requestUrl: request.url,
     code: code ? 'exists' : 'missing',
     next,
     SITE_URL,
-    baseUrl,
-    origin,
-    finalRedirectUrl: `${baseUrl}${next}`
+    finalRedirectUrl: `${SITE_URL}${next}`
   });
 
   if (code) {
     const supabase = createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      const redirectUrl = `${baseUrl}${next}`
+      const redirectUrl = `${SITE_URL}${next}`
       console.log('[Auth Callback] Success - Redirecting to:', redirectUrl);
       return NextResponse.redirect(redirectUrl)
     }
   }
 
   console.error('[Auth Callback] Error exchanging code for session')
-  return NextResponse.redirect(`${baseUrl}/auth/auth-code-error`)
+  return NextResponse.redirect(`${SITE_URL}/auth/auth-code-error`)
 } 
