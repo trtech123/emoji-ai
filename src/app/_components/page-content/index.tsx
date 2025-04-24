@@ -8,36 +8,40 @@ interface PageContentProps extends React.PropsWithChildren {
 
 export const PageContent = ({ children, prompt }: PageContentProps) => {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center px-4 md:px-6 lg:px-8 py-8 md:py-12">
       {/* Title Section */}
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-2">
-        <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text">אימוג׳י</span> AI
-      </h1>
-      <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8">
-        נוצר <span className="font-semibold text-foreground">בשבילכם</span> על ידכם
-      </p>
+      <div className="text-center w-full max-w-3xl mx-auto mb-8 md:mb-12">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4">
+          <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text">אימוג׳י</span> AI
+        </h1>
+        <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
+          נוצר <span className="font-semibold text-foreground">בשבילכם</span> על ידכם
+        </p>
+      </div>
 
       {/* Main Content Container */}
-      <div className="flex flex-col items-center w-full max-w-md">
+      <div className="flex flex-col items-center w-full max-w-lg mx-auto">
         {/* Showcase Image */}
-        <div className="w-full flex justify-start -ml-12">
+        <div className="w-full flex justify-center md:justify-start md:-ml-12 mb-4">
           <Image 
             src="/emoji-showcase.png"
             alt="תצוגת אימוג׳ים שנוצרו על ידי AI"
             width={350}
             height={150}
-            className="rounded-t-lg"
+            className="rounded-t-lg w-[280px] md:w-[350px] h-auto"
             priority
           />
         </div>
 
         {/* Prompt Form */}
-        <div className="w-full -mt-2">
+        <div className="w-full">
           <EmojiForm initialPrompt={prompt} />
         </div>
 
         {/* Example Prompts */}
-        {children}
+        <div className="w-full mt-8">
+          {children}
+        </div>
       </div>
     </div>
   )

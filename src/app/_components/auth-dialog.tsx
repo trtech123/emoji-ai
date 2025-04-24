@@ -22,14 +22,14 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>התחברות או הרשמה</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[425px] h-[90vh] sm:h-auto flex flex-col">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl sm:text-xl">התחברות או הרשמה</DialogTitle>
+          <DialogDescription className="text-base sm:text-sm">
             התחבר כדי ליצור אימוג&apos;ים.
           </DialogDescription>
         </DialogHeader>
-        <div className="pt-4">
+        <div className="flex-grow flex items-center justify-center py-6 sm:py-4">
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -43,11 +43,26 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
                 }
               },
               style: {
+                container: {
+                  width: '100%'
+                },
                 button: {
                   flex: 1,
                   width: '100%',
+                  padding: '12px',
+                  height: 'auto',
+                  fontSize: '16px',
                   justifyContent: 'center',
-                  borderRadius: '6px'
+                  borderRadius: '8px',
+                  marginBottom: '0'
+                },
+                divider: {
+                  display: 'none'
+                },
+                message: {
+                  padding: '12px',
+                  fontSize: '14px',
+                  borderRadius: '8px'
                 }
               }
             }}
