@@ -17,6 +17,7 @@ import type { User } from '@supabase/supabase-js'
 import { LogIn, LogOut } from 'lucide-react'
 import { signOutAction } from '../actions'
 import toast from 'react-hot-toast'
+import { AUTH_CALLBACK_URL } from '@/lib/constants'
 
 export default function AuthButton() {
   const supabase = createClient()
@@ -143,7 +144,7 @@ export default function AuthButton() {
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
             theme="dark"
-            redirectTo={typeof window !== 'undefined' ? window.location.origin : undefined}
+            redirectTo={AUTH_CALLBACK_URL}
           />
         </div>
       </DialogContent>

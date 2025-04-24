@@ -3,10 +3,14 @@ export const PROD_URL = "https://emojis.sh"
 export const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV
 export const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : process.env.NGROK_URL || "http://localhost:3000"
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? (
+  process.env.NEXT_PUBLIC_VERCEL_URL 
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
+    : 'http://localhost:3000'
+)
+
+export const AUTH_CALLBACK_URL = `${SITE_URL}/auth/callback`
+
 export const APP_STORE_URL = "https://apps.apple.com/us/app/ai-emojis-generator/id6468916301"
 
 export const SITEMAP_PAGE_SIZE = 50_000
