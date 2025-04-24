@@ -241,42 +241,44 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   return (
     <div className="w-full">
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-        <Textarea
-          ref={textAreaRef}
-          id="prompt-input"
-          defaultValue={initialPrompt}
-          name="prompt"
-          required
-          placeholder="תאר את התמונה שלך (למשל, חתול אסטרונאוט)"
-          className="pr-14 py-3 pl-4 text-base resize-none border rounded-b-lg shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
-          rows={3}
-          disabled={isSubmitting || isLoadingProfile}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !(isSubmitting || isLoadingProfile)) {
-              e.preventDefault();
-              handleSubmit();
-            }
-          }}
-        />
-        <Button
-          type="submit"
-          disabled={isSubmitting || isLoadingProfile}
-          size="icon"
-          variant="default"
-          className="absolute bottom-3 left-3 rounded-lg bg-black hover:bg-black/90"
-          aria-label="צור אימוג&apos;י"
-        >
-          {isSubmitting || isLoadingProfile ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Send className="h-5 w-5 transform scale-x-[-1]" />
-          )}
-        </Button>
+        <div className="relative">
+          <Textarea
+            ref={textAreaRef}
+            id="prompt-input"
+            defaultValue={initialPrompt}
+            name="prompt"
+            required
+            placeholder="תאר את התמונה שלך (למשל, חתול אסטרונאוט)"
+            className="pr-14 py-3 pl-12 text-base resize-none border rounded-lg shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
+            rows={3}
+            disabled={isSubmitting || isLoadingProfile}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !(isSubmitting || isLoadingProfile)) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+          />
+          <Button
+            type="submit"
+            disabled={isSubmitting || isLoadingProfile}
+            size="icon"
+            variant="default"
+            className="absolute bottom-3 left-3 rounded-lg bg-black hover:bg-black/90"
+            aria-label="צור אימוג׳י"
+          >
+            {isSubmitting || isLoadingProfile ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5 transform scale-x-[-1]" />
+            )}
+          </Button>
+        </div>
       </form>
 
       {/* Always show error if it exists */}
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="text-sm text-destructive mt-2">{error}</p>
       )}
 
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
