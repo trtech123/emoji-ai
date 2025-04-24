@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { SITE_URL } from '@/lib/constants'
 
+// Force Node.js runtime
+export const runtime = 'nodejs'
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
