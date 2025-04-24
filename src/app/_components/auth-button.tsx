@@ -153,7 +153,7 @@ export default function AuthButton() {
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
             theme="dark"
-            redirectTo={AUTH_CALLBACK_URL}
+            redirectTo="https://emoji-ai-delta.vercel.app/auth/callback"
             providers={['google']}
             view="sign_in"
             showLinks={false}
