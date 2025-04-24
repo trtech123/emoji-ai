@@ -147,6 +147,9 @@ export default function AuthButton() {
             appearance={{ theme: ThemeSupa }}
             theme="dark"
             redirectTo={AUTH_CALLBACK_URL}
+            providers={['google']}
+            view="sign_in"
+            showLinks={false}
           />
         </div>
       </DialogContent>
