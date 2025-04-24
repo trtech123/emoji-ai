@@ -1,7 +1,6 @@
 import { Suspense } from "react"
-import { EmojiGrid } from "../emoji-grid"
-import { EmojiCount } from "../emoji-count"
 import { EmojiForm } from "../emoji-form"
+import Image from 'next/image'
 
 interface PageContentProps extends React.PropsWithChildren {
   prompt?: string
@@ -9,22 +8,37 @@ interface PageContentProps extends React.PropsWithChildren {
 
 export const PageContent = ({ children, prompt }: PageContentProps) => {
   return (
-    <>
-      <div className="py-[15vh] sm:py-[20vh] flex flex-col items-center justify-center">
-        <h1 className="font-medium text-4xl text-black mb-3 animate-in fade-in slide-in-from-bottom-3 duration-1000 ease-in-out">
-          AI אימוג׳י
-        </h1>
-        <EmojiCount />
+    <div className="flex flex-col items-center">
+      {/* Title Section */}
+      <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-2">
+        <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text">אימוג׳י</span> AI
+      </h1>
+      <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8">
+        נוצר <span className="font-semibold text-foreground">בשבילכם</span> על ידכם
+      </p>
 
-        <div className="max-w-md space-y-4 w-full animate-in fade-in slide-in-from-bottom-4 duration-1200 ease-in-out">
-          <EmojiForm initialPrompt={prompt} />
-          {children}
+      {/* Main Content Container */}
+      <div className="flex flex-col items-center w-full max-w-md">
+        {/* Showcase Image */}
+        <div className="w-full flex justify-start -ml-12">
+          <Image 
+            src="/emoji-showcase.png"
+            alt="תצוגת אימוג׳ים שנוצרו על ידי AI"
+            width={350}
+            height={150}
+            className="rounded-t-lg"
+            priority
+          />
         </div>
-      </div>
 
-      <Suspense>
-        <EmojiGrid prompt={prompt} />
-      </Suspense>
-    </>
+        {/* Prompt Form */}
+        <div className="w-full -mt-2">
+          <EmojiForm initialPrompt={prompt} />
+        </div>
+
+        {/* Example Prompts */}
+        {children}
+      </div>
+    </div>
   )
 }

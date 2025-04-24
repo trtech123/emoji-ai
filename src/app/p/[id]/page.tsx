@@ -132,9 +132,6 @@ export default async function EmojiPage({ params }: PageProps) {
                 </div>
               )}
             </div>
-            <Button variant="secondary" className="mt-4 font-semibold">
-              <RefreshCcw className="ml-2 h-4 w-4" /> רמיקס
-            </Button>
           </div>
 
           <div className="flex-grow lg:w-1/2 flex flex-col p-6 md:p-8 rounded-r-lg">

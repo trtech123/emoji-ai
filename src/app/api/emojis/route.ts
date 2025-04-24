@@ -429,7 +429,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error", details: errorMsg }, { status: 500 })
   }
 } 
-
 // After parsing JSON credentials, write to a temp file and set GOOGLE_APPLICATION_CREDENTIALS
 const gcpCredPath = path.join(os.tmpdir(), 'gcp_credentials.json')
 fs.writeFileSync(gcpCredPath, credentials)

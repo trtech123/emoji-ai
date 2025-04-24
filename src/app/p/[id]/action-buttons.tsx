@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Share, Download, Copy, MoreHorizontal } from 'lucide-react';
+import { Share, Download, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 
@@ -13,6 +13,39 @@ interface ActionButtonsProps {
 
 export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionButtonsProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleShare = async () => {
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    
+    if (typeof navigator !== 'undefined' && 'share' in navigator && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: `אימוג׳י: ${emojiPrompt}`,
+          text: `בוא לראות את האימוג׳י שיצרתי: ${emojiPrompt}`,
+          url: shareUrl,
+        });
+        toast.success('שותף בהצלחה!');
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Share failed:', err);
+          await handleCopyLink();
+        }
+      }
+    } else {
+      await handleCopyLink();
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('הקישור הועתק!');
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+      toast.error('העתקת הקישור נכשלה.');
+    }
+  };
 
   const handleCopy = async () => {
     if (!displayImageUrl) return;
@@ -61,7 +94,7 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline">
+      <Button variant="outline" onClick={handleShare}>
         <Share className="ml-2 h-4 w-4" /> שתף
       </Button>
       {displayImageUrl && (
@@ -79,9 +112,6 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
               <Copy className="ml-2 h-4 w-4" /> העתק קישור
           </Button>
       )}
-      <Button variant="outline" size="icon">
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
     </div>
   );
 } 

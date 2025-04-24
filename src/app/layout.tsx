@@ -71,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
               <div className={cn("container flex h-14 items-center gap-4", BODY_PADDING)}>
                 <div className="flex-none">
-                  <span className="font-bold text-lg"> אימוג&apos;י AI</span>
+                  <span className="font-bold text-lg text-transparent">אימוג׳י AI</span>
                 </div>
                 <div className="flex-grow px-4">
                   <SearchBar className="max-w-xl mx-auto" />

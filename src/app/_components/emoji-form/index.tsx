@@ -225,7 +225,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         setUserProfile(prev => prev ? { ...prev, generation_credits: Math.max(0, prev.generation_credits - 1) } : null);
       }
 
-      toast.success("אימוג&apos;י נוצר! מעביר אותך לדף האימוג&apos;י...");
       router.push(`/p/${data.id}`);
 
     } catch (err) {
@@ -239,7 +238,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col w-full">
       <form ref={formRef} onSubmit={handleSubmit} className="relative w-full">
         <Textarea
           ref={textAreaRef}
@@ -248,7 +247,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
           name="prompt"
           required
           placeholder="תאר את התמונה שלך (למשל, חתול אסטרונאוט)"
-          className="pr-14 py-3 pl-4 text-base resize-none border rounded-lg shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
+          className="pr-14 py-3 pl-4 text-base resize-none border rounded-b-lg shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
           rows={3}
           disabled={isSubmitting || isLoadingProfile}
           onKeyDown={(e) => {
@@ -262,7 +261,8 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
           type="submit"
           disabled={isSubmitting || isLoadingProfile}
           size="icon"
-          className="absolute bottom-3 left-3 rounded-lg"
+          variant="default"
+          className="absolute bottom-3 left-3 rounded-lg bg-black hover:bg-black/90"
           aria-label="צור אימוג&apos;י"
         >
           {isSubmitting || isLoadingProfile ? (
@@ -273,9 +273,9 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         </Button>
       </form>
 
-      {/* Always show error if it exists, add margin */}
+      {/* Always show error if it exists */}
       {error && (
-        <p className="text-sm text-destructive mt-2">{error}</p>
+        <p className="text-sm text-destructive">{error}</p>
       )}
 
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
