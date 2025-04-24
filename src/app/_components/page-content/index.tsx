@@ -25,15 +25,15 @@ export const PageContent = ({ children, prompt }: PageContentProps) => {
         </div>
 
         {/* Main Content Container */}
-        <div className="flex flex-col items-center w-full max-w-[95%] sm:max-w-xl lg:max-w-2xl mx-auto space-y-6 sm:space-y-8">
+        <div className="flex flex-col items-center w-full max-w-[95%] sm:max-w-xl lg:max-w-2xl mx-auto">
           {/* Showcase Image */}
-          <div className="w-full flex justify-center sm:justify-start sm:-ml-8 lg:-ml-12">
+          <div className="w-full flex justify-end mb-0 -mr-8 sm:-mr-10 lg:-mr-12">
             <Image 
               src="/emoji-showcase.png"
               alt="תצוגת אימוג׳ים שנוצרו על ידי AI"
               width={350}
               height={150}
-              className="w-[250px] sm:w-[300px] lg:w-[350px] h-auto rounded-xl shadow-lg"
+              className="w-[250px] sm:w-[300px] lg:w-[350px] h-auto rounded-t-xl"
               priority
             />
           </div>
@@ -44,7 +44,7 @@ export const PageContent = ({ children, prompt }: PageContentProps) => {
           </div>
 
           {/* Example Prompts */}
-          <div className="w-full pt-4 sm:pt-6">
+          <div className="w-full mt-6 sm:mt-8">
             {children}
           </div>
         </div>
