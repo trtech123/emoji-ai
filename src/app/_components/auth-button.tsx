@@ -17,7 +17,7 @@ import type { User } from '@supabase/supabase-js'
 import { LogIn, LogOut } from 'lucide-react'
 import { signOutAction } from '../actions'
 import toast from 'react-hot-toast'
-import { AUTH_CALLBACK_URL } from '@/lib/constants'
+import { SITE_URL, AUTH_CALLBACK_URL } from '@/lib/constants'
 
 export default function AuthButton() {
   const supabase = createClient()
@@ -26,6 +26,13 @@ export default function AuthButton() {
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
+    // Add debug logging
+    console.log("[AuthButton] Debug URLs:", {
+      SITE_URL,
+      AUTH_CALLBACK_URL,
+      currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
+    });
+    
     console.log("[AuthButton] useEffect running - Setting up listener");
     // Confirm execution context
     if (typeof window === 'undefined') {
