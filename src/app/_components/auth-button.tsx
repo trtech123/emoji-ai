@@ -2,24 +2,16 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { DialogTrigger } from "@/components/ui/dialog"
 import type { User } from '@supabase/supabase-js'
 import { LogIn, LogOut } from 'lucide-react'
 import { signOutAction } from '../actions'
 import toast from 'react-hot-toast'
 import { SITE_URL, AUTH_CALLBACK_URL } from '@/lib/constants'
+import { AuthDialog } from './auth-dialog'
 
-export default function AuthButton() {
+export function AuthButton() {
   const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
   const [isOpen, setIsOpen] = useState(false)
@@ -112,8 +104,6 @@ export default function AuthButton() {
         // the redirect and subsequent page load/auth state listener will handle it.
       }
     });
-    // Original client-side call (removed):
-    // await supabase.auth.signOut()
   }
 
   if (user) {
@@ -135,63 +125,23 @@ export default function AuthButton() {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      if (open) {
-        // Debug info when dialog opens
-        console.log('[Auth Dialog Debug] Environment & URLs:', {
-          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-          SITE_URL,
-          AUTH_CALLBACK_URL,
-          currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
-          currentURL: typeof window !== 'undefined' ? window.location.href : 'SSR',
-        });
-        toast(`Debug - Current URL: ${typeof window !== 'undefined' ? window.location.origin : 'SSR'}`);
-      }
-      setIsOpen(open);
-    }}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <LogIn className="mr-2 h-4 w-4" /> התחבר
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>התחברות או הרשמה</DialogTitle>
-          <DialogDescription>
-            התחבר כדי ליצור אימוג&apos;ים.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="pt-4">
-          <Auth
-            supabaseClient={supabase}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#404040',
-                    brandAccent: '#2d2d2d'
-                  }
-                }
-              },
-              style: {
-                button: {
-                  flex: 1,
-                  width: '100%',
-                  justifyContent: 'center',
-                  borderRadius: '6px'
-                }
-              }
-            }}
-            theme="dark"
-            providers={['google']}
-            onlyThirdPartyProviders
-            redirectTo={typeof window !== 'undefined' ? window.location.origin : SITE_URL}
-            view="sign_in"
-            showLinks={false}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>
+        <LogIn className="mr-2 h-4 w-4" /> התחבר
+      </Button>
+      <AuthDialog isOpen={isOpen} onOpenChange={(open) => {
+        if (open) {
+          console.log('[Auth Dialog Debug] Environment & URLs:', {
+            NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+            SITE_URL,
+            AUTH_CALLBACK_URL,
+            currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
+            currentURL: typeof window !== 'undefined' ? window.location.href : 'SSR',
+          });
+          toast(`Debug - Current URL: ${typeof window !== 'undefined' ? window.location.origin : 'SSR'}`);
+        }
+        setIsOpen(open);
+      }} />
+    </>
   )
 } 

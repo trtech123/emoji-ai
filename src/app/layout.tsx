@@ -5,7 +5,7 @@ import { Inter } from "next/font/google"
 import { Providers } from "./_components/providers"
 import "./globals.css"
 import { Toaster } from "react-hot-toast"
-import AuthButton from "./_components/auth-button"
+import { AuthButton } from './_components/auth-button'
 import RightSidebar from "./_components/right-sidebar"
 import { SearchBar } from "./_components/search-bar"
 import { BODY_PADDING } from "@/lib/constants"

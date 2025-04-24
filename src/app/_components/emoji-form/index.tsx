@@ -20,6 +20,7 @@ import {
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import Link from "next/link"
+import { AuthDialog } from "../auth-dialog"
 
 interface Profile {
   id: string
@@ -238,8 +239,8 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   };
 
   return (
-    <div className="flex flex-col w-full">
-      <form ref={formRef} onSubmit={handleSubmit} className="relative w-full">
+    <div className="w-full">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         <Textarea
           ref={textAreaRef}
           id="prompt-input"
@@ -278,24 +279,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>נדרשת התחברות</DialogTitle>
-            <DialogDescription>
-              אנא התחבר או הירשם כדי ליצור אימוג&apos;ים.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="pt-4">
-            <Auth 
-               supabaseClient={supabase} 
-               appearance={{ theme: ThemeSupa }} 
-               theme="dark" 
-               redirectTo={typeof window !== 'undefined' ? window.location.origin : undefined}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
   )
 }
