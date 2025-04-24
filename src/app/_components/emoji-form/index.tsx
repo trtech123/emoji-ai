@@ -49,7 +49,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
   useEffect(() => {
     const fetchUserProfile = async (currentUser: User) => {
-      console.log(`[EmojiForm] Attempting to fetch/create profile for user: ${currentUser.id}`);
       setIsLoadingProfile(true);
       setError(null);
       let profileData: Profile | null = null;
@@ -62,12 +61,8 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
           .single();
 
         if (existingProfile) {
-          console.log(`[EmojiForm] Fetched existing profile for ${currentUser.id}:`, existingProfile);
           profileData = existingProfile as Profile;
-
         } else if (fetchError && fetchError.code === 'PGRST116') {
-          console.warn(`[EmojiForm] Profile not found for ${currentUser.id}. Attempting creation.`);
-          
           const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
             .insert({ 
@@ -79,31 +74,24 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
             .single();
 
           if (insertError) {
-            console.error(`[EmojiForm] Error creating profile for ${currentUser.id}:`, insertError);
             throw new Error("שגיאה ביצירת פרופיל המשתמש שלך.");
           } else if (newProfile) {
-             console.log(`[EmojiForm] Created new profile for ${currentUser.id}:`, newProfile);
             profileData = newProfile as Profile;
           } else {
-             console.error(`[EmojiForm] Profile creation for ${currentUser.id} returned no data/error.`);
-             throw new Error("אירעה שגיאה בלתי צפויה ביצירת הפרופיל.");
+            throw new Error("אירעה שגיאה בלתי צפויה ביצירת הפרופיל.");
           }
         } else if (fetchError) {
-          console.error(`[EmojiForm] Error fetching profile (non-PGRST116) for ${currentUser.id}:`, fetchError);
           throw fetchError;
         } else {
-           console.warn(`[EmojiForm] Profile fetch for ${currentUser.id} returned no data/error.`);
-           throw new Error("אירעה שגיאה בלתי צפויה בטעינת הפרופיל.");
+          throw new Error("אירעה שגיאה בלתי צפויה בטעינת הפרופיל.");
         }
         
         setUserProfile(profileData);
 
       } catch (err: any) {
-        console.error(`[EmojiForm] CATCH block: Error processing profile for ${currentUser.id}:`, err);
         setError(err.message || "לא ניתן לטעון או ליצור את הפרופיל שלך.");
         setUserProfile(null);
       } finally {
-        console.log(`[EmojiForm] FINALLY block: Setting isLoadingProfile to false for ${currentUser.id}`);
         setIsLoadingProfile(false);
       }
     };
@@ -131,7 +119,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     });
 
     return () => {
-        console.log("[EmojiForm] useEffect cleanup: Unsubscribing auth listener.");
         subscription.unsubscribe();
     };
   }, [supabase]);
@@ -146,12 +133,11 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     if (e) e.preventDefault();
 
     if (isSubmitting || isLoadingProfile) {
-      console.log(`[EmojiForm] handleSubmit blocked: isSubmitting=${isSubmitting}, isLoadingProfile=${isLoadingProfile}`);
       return;
     }
 
     if (!user) {
-      setError("אנא התחבר כדי ליצור אימוג&apos;ים.");
+      setError("אנא התחבר כדי ליצור אימוג׳ים.");
       setShowLoginModal(true);
       toast.error("אנא התחבר תחילה.");
       return;
@@ -218,7 +204,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
       if (!data || !data.id) {
         throw new Error(
-          data?.error || "היצירה הצליחה אך לא התקבל מזהה אימוג&apos;י."
+          data?.error || "היצירה הצליחה אך לא התקבל מזהה אימוג׳י."
         );
       }
 
@@ -230,7 +216,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "אירעה שגיאה לא ידועה.";
-      console.error("handleSubmit Error:", err);
       setError(err instanceof Error ? err.message : errorMsg);
       toast.error(err instanceof Error ? err.message : errorMsg);
     } finally {
@@ -276,7 +261,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         </div>
       </form>
 
-      {/* Always show error if it exists */}
       {error && (
         <p className="text-sm text-destructive mt-2">{error}</p>
       )}

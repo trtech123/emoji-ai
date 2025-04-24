@@ -22,19 +22,19 @@ export const PageContent = ({ children, prompt }: PageContentProps) => {
       {/* Main Content Container */}
       <div className="flex flex-col items-center w-full max-w-[95%] sm:max-w-md md:max-w-lg mx-auto">
         {/* Showcase Image */}
-        <div className="w-full flex justify-center sm:justify-start sm:-ml-8 md:-ml-12 mb-2 sm:mb-4">
+        <div className="w-full flex justify-center sm:justify-start sm:-ml-10 md:-ml-20 mb-0">
           <Image 
             src="/emoji-showcase.png"
             alt="תצוגת אימוג׳ים שנוצרו על ידי AI"
             width={350}
             height={150}
-            className="rounded-t-lg w-[220px] sm:w-[280px] md:w-[350px] h-auto"
+            className="w-[220px] sm:w-[280px] md:w-[350px] h-auto"
             priority
           />
         </div>
 
         {/* Prompt Form */}
-        <div className="w-full">
+        <div className="w-full -mt-1">
           <EmojiForm initialPrompt={prompt} />
         </div>
 
