@@ -55,6 +55,8 @@ export default function AuthButton() {
       if (session?.user) {
         console.log("[AuthButton] User detected via onAuthStateChange, closing modal if open.");
         setIsOpen(false);
+        // Show the redirect URL in a toast
+        toast.success(`Redirecting to: ${AUTH_CALLBACK_URL}`);
       }
     });
 
