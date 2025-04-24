@@ -9,7 +9,7 @@ import { nanoid } from "@/lib/utils"
 import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai"; // Keep safety types if used
 
 // ADD: Replicate import
-import Replicate from "replicate";
+import { replicate } from '@/server/replicate';
 
 // ADD: Google Cloud Translate Client
 import { Translate } from '@google-cloud/translate/build/src/v2';
@@ -85,9 +85,6 @@ if (!process.env.REPLICATE_API_TOKEN) {
   console.error("Missing Replicate environment variable: REPLICATE_API_TOKEN");
   throw new Error("Missing Replicate API Token configuration. Please set REPLICATE_API_TOKEN."); 
 }
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-});
 console.log("[DEBUG] Initialized Replicate SDK");
 
 // Initialize Translate with explicit auth
@@ -100,10 +97,20 @@ console.log("[DEBUG] Initialized Google Cloud Translate V2 Client");
 // No need for JWT check here anymore, Supabase auth handles it
 // const jwtSchema = z.object({ ... })
 
+// Add type for prediction response
+type ReplicateResponse = {
+  data: {
+    output: string[];
+    removeBgData: {
+      output: string;
+    } | null;
+  } | null;
+  error: unknown | null;
+};
+
 export async function POST(request: Request) {
   const supabase = createClient() // Use server client
-  let emojiId: string | null = null; 
-  let translatedPrompt: string | null = null; // Variable to hold translated text
+  let emojiId: string | null = null;
 
   try {
     // 1. Check User Authentication
@@ -144,8 +151,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Nice try! Your prompt is inappropriate, let's keep it PG." }, { status: 400 });
       }
 
-      const prediction = await replicate.createEmoji(prompt, emojiId);
-      const bgRemovedImageUrl = prediction?.output?.[0];
+      const prediction: ReplicateResponse = await replicate.createEmoji(prompt, emojiId);
+      
+      if (prediction.error) {
+        throw prediction.error;
+      }
+
+      const bgRemovedImageUrl = prediction.data?.removeBgData?.output;
 
       if (!bgRemovedImageUrl) {
         throw new Error('No image URL in Replicate response');
@@ -206,8 +218,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
 } 
-// After parsing JSON credentials, write to a temp file and set GOOGLE_APPLICATION_CREDENTIALS
-const gcpCredPath = path.join(os.tmpdir(), 'gcp_credentials.json')
-fs.writeFileSync(gcpCredPath, credentials)
-process.env.GOOGLE_APPLICATION_CREDENTIALS = gcpCredPath
-console.log(`[DEBUG] Wrote Google credentials JSON to: ${gcpCredPath}`) 
