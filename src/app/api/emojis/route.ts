@@ -1,64 +1,41 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { z } from "zod" // Re-add zod import
+import { z } from "zod"
 import { nanoid } from "@/lib/utils"
-// REMOVE: Cloudinary import
-// import { v2 as cloudinary } from 'cloudinary'
-
-// ADD: Google AI GenAI SDK imports (keep necessary ones)
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai"; // Keep safety types if used
-
-// ADD: Replicate import
-import { replicate } from '@/server/replicate';
-
-// ADD: Google Cloud Translate Client
-import { Translate } from '@google-cloud/translate/build/src/v2';
-
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
+import { GoogleGenAI } from "@google/genai"
+import { replicate } from '@/server/replicate'
+import { Translate } from '@google-cloud/translate/build/src/v2'
 
 // Force Node.js runtime for this route
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-// --- REMOVE Gemini API Key Initialization ---
-// if (!process.env.GEMINI_API_KEY) { ... }
-// const genAI_apiKey = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Check for credentials first since both services will need it
-const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+// Check for credentials
+const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
 if (!credentials) {
-  console.error("Missing Google Cloud credentials environment variable: GOOGLE_APPLICATION_CREDENTIALS_JSON");
-  throw new Error("Missing Google Cloud credentials configuration");
+  console.error("Missing Google Cloud credentials environment variable: GOOGLE_APPLICATION_CREDENTIALS_JSON")
+  throw new Error("Missing Google Cloud credentials configuration")
 }
 
-// Parse credentials once to avoid doing it multiple times
-let parsedCredentials;
+// Parse credentials once
+let parsedCredentials
 try {
-  parsedCredentials = JSON.parse(credentials);
-  console.log("[DEBUG] Successfully parsed Google Cloud credentials from environment variable");
-
-  // Write credentials JSON to a temp file for ADC
-  const gcpCredPath = path.join(os.tmpdir(), 'gcp-credentials.json');
-  fs.writeFileSync(gcpCredPath, JSON.stringify(parsedCredentials), 'utf8');
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = gcpCredPath;
-  console.log(`[DEBUG] Wrote credentials JSON to ${gcpCredPath}`);
-
+  parsedCredentials = JSON.parse(credentials)
+  console.log("[DEBUG] Successfully parsed Google Cloud credentials from environment variable")
 } catch (e) {
-  console.error("Failed to parse Google Cloud credentials JSON:", e);
-  throw new Error("Invalid Google Cloud credentials JSON format");
+  console.error("Failed to parse Google Cloud credentials JSON:", e)
+  throw new Error("Invalid Google Cloud credentials JSON format")
 }
 
 if (!process.env.GOOGLE_PROJECT_ID) { 
-  console.error("Missing Vertex AI environment variable: GOOGLE_PROJECT_ID");
-  throw new Error("Missing Vertex AI Project ID configuration"); 
+  console.error("Missing Vertex AI environment variable: GOOGLE_PROJECT_ID")
+  throw new Error("Missing Vertex AI Project ID configuration")
 }
 if (!process.env.GOOGLE_LOCATION) { 
-  console.error("Missing Vertex AI environment variable: GOOGLE_LOCATION");
-  throw new Error("Missing Vertex AI Location configuration"); 
+  console.error("Missing Vertex AI environment variable: GOOGLE_LOCATION")
+  throw new Error("Missing Vertex AI Location configuration")
 }
-const project = process.env.GOOGLE_PROJECT_ID;
-const location = process.env.GOOGLE_LOCATION;
+const project = process.env.GOOGLE_PROJECT_ID
+const location = process.env.GOOGLE_LOCATION
 
 // Initialize Vertex AI client with explicit auth options
 const genAI = new GoogleGenAI({
@@ -73,29 +50,22 @@ const genAI = new GoogleGenAI({
       'https://www.googleapis.com/auth/cloud-translation'
     ]
   }
-});
-console.log(`[DEBUG] Initialized @google/genai SDK for Vertex AI (Project: ${project}, Location: ${location})`);
+})
+console.log(`[DEBUG] Initialized @google/genai SDK for Vertex AI (Project: ${project}, Location: ${location})`)
 
-// --- REMOVE Cloudinary Configuration ---
-// if (!process.env.CLOUDINARY_CLOUD_NAME || ...) { ... }
-// cloudinary.config({ ... });
-
-// --- ADD Replicate Configuration ---
+// Initialize Replicate
 if (!process.env.REPLICATE_API_TOKEN) {
-  console.error("Missing Replicate environment variable: REPLICATE_API_TOKEN");
-  throw new Error("Missing Replicate API Token configuration. Please set REPLICATE_API_TOKEN."); 
+  console.error("Missing Replicate environment variable: REPLICATE_API_TOKEN")
+  throw new Error("Missing Replicate API Token configuration. Please set REPLICATE_API_TOKEN.")
 }
-console.log("[DEBUG] Initialized Replicate SDK");
+console.log("[DEBUG] Initialized Replicate SDK")
 
 // Initialize Translate with explicit auth
 const translate = new Translate({
   credentials: parsedCredentials,
-  projectId: parsedCredentials.project_id // Explicitly set project ID from credentials
-});
-console.log("[DEBUG] Initialized Google Cloud Translate V2 Client");
-
-// No need for JWT check here anymore, Supabase auth handles it
-// const jwtSchema = z.object({ ... })
+  projectId: parsedCredentials.project_id
+})
+console.log("[DEBUG] Initialized Google Cloud Translate V2 Client")
 
 // Add type for prediction response
 type ReplicateResponse = {
@@ -106,7 +76,7 @@ type ReplicateResponse = {
     } | null;
   } | null;
   error: unknown | null;
-};
+}
 
 export async function POST(request: Request) {
   const supabase = createClient() // Use server client
