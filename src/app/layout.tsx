@@ -11,6 +11,7 @@ import { SearchBar } from "./_components/search-bar"
 import { BODY_PADDING } from "@/lib/constants"
 import { MobileInputFix } from "./_components/mobile-input-fix"
 import { MobileBottomNav } from "./_components/mobile-bottom-nav"
+import { HeaderWithSearch } from "./_components/header-with-search"
 
 /**
  * Opt out of caching for all data requests in the route segment. Based on the docs,
@@ -76,21 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <RightSidebar />
           </div>
           <div className="flex flex-col flex-grow">
-            <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
-              <div className={cn("container flex h-14 items-center gap-4", BODY_PADDING)}>
-                <div className="flex-none">
-                  <span className="font-bold text-[10px] sm:text-lg text-transparent">אימוג׳י AI</span>
-                </div>
-                <div className="hidden md:flex flex-grow px-4">
-                  <div className="w-full">
-                    <SearchBar className="max-w-xl mx-auto" />
-                  </div>
-                </div>
-                <nav className="flex-none flex items-center">
-                  <AuthButton />
-                </nav>
-              </div>
-            </header>
+            <HeaderWithSearch />
             <main className={cn("flex-grow flex items-stretch flex-col pb-16 md:pb-0", BODY_PADDING)}>
               <Providers>{children}</Providers>
             </main>
