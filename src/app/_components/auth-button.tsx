@@ -54,8 +54,6 @@ export function AuthButton() {
       if (session?.user) {
         console.log("[AuthButton] User detected via onAuthStateChange, closing modal if open.");
         setIsOpen(false);
-        // Show the redirect URL in a toast
-        toast.success(`Redirecting to: ${AUTH_CALLBACK_URL}`);
       }
     });
 
@@ -138,7 +136,6 @@ export function AuthButton() {
             currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
             currentURL: typeof window !== 'undefined' ? window.location.href : 'SSR',
           });
-          toast(`Debug - Current URL: ${typeof window !== 'undefined' ? window.location.origin : 'SSR'}`);
         }
         setIsOpen(open);
       }} />
