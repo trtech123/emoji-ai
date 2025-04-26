@@ -9,6 +9,7 @@ import { AuthButton } from './_components/auth-button'
 import RightSidebar from "./_components/right-sidebar"
 import { SearchBar } from "./_components/search-bar"
 import { BODY_PADDING } from "@/lib/constants"
+import { MobileInputFix } from "./_components/mobile-input-fix"
 
 /**
  * Opt out of caching for all data requests in the route segment. Based on the docs,
@@ -66,15 +67,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-        <style jsx global>{`
-          @media (max-width: 640px) {
-            input, textarea, select {
-              font-size: 16px !important;
-            }
-          }
-        `}</style>
       </head>
       <body className={cn("antialiased font-sans scroll-smooth", inter.className)}>
+        <MobileInputFix />
         <div className="flex flex-row min-h-screen">
           <RightSidebar />
           <div className="flex flex-col flex-grow">
