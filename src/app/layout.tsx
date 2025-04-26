@@ -64,6 +64,9 @@ export function generateMetadata(): Metadata {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </head>
       <body className={cn("antialiased font-sans scroll-smooth", inter.className)}>
         <div className="flex flex-row min-h-screen">
           <RightSidebar />
