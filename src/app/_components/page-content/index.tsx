@@ -28,7 +28,7 @@ export const PageContent = ({ children, prompt }: PageContentProps) => {
             alt="תצוגת אימוג׳ים שנוצרו על ידי AI"
             width={350}
             height={150}
-            className="w-[220px] sm:w-[280px] md:w-[350px] h-auto"
+            className="w-[110px] sm:w-[280px] md:w-[350px] h-auto"
             priority
           />
         </div>
