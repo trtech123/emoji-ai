@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <span className="font-bold text-[10px] sm:text-lg text-transparent">אימוג׳י AI</span>
                 </div>
                 <div className="flex-grow px-4">
-                  <div className="w-[180%] -mr-[40%] sm:w-full sm:mr-0">
+                  <div className="w-[180%] -mr-[90%] sm:w-full sm:mr-0">
                     <SearchBar className="max-w-xl mx-auto sm:max-w-xl" />
                   </div>
                 </div>
