@@ -55,16 +55,16 @@ export function SearchBar({ className }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const handleSearch = useCallback(
-    (query: string) => {
+  // Update URL and trigger search when debounced query changes
+  useEffect(() => {
+    if (user) {
       const params = new URLSearchParams();
-      if (query) {
-        params.set("q", query);
+      if (debouncedSearchQuery) {
+        params.set("q", debouncedSearchQuery);
       }
       router.push(`/search?${params.toString()}`);
-    },
-    [router]
-  );
+    }
+  }, [debouncedSearchQuery, router, user]);
 
   const handleInputFocus = async () => {
     if (!user) {
@@ -86,13 +86,11 @@ export function SearchBar({ className }: SearchBarProps) {
         toast.error('שגיאה בהתחברות עם Google');
         console.error('Error signing in with Google:', error);
       }
-    } else {
-      handleSearch(searchQuery);
     }
   };
 
   return (
-    <div className="relative w-full max-w-sm">
+    <div className={className}>
       <form onSubmit={handleSubmit} className="relative">
         <input
           type="text"
