@@ -69,7 +69,7 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
       className={cn(
         "relative overflow-hidden transition-all duration-200 hover:shadow-lg",
         "group aspect-square w-full overflow-hidden rounded-xl bg-gray-100",
-        "max-w-[60%] sm:max-w-full mx-auto"
+        "max-w-[50%] sm:max-w-full mx-auto"
       )}
     >
       <Button
@@ -83,14 +83,14 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
         <div className="relative w-full h-full">
           {isLoadingImage && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <Loader2 className="w-4 h-4 sm:w-6 sm:h-6 animate-spin text-muted-foreground" />
             </div>
           )}
           <Image
             src={imageUrl}
             alt={prompt}
             fill
-            sizes="(max-width: 768px) 60vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 50vw, 33vw"
             className="object-contain p-2 sm:p-8 transition-transform duration-200 group-hover:scale-110"
             onLoad={() => setIsLoadingImage(false)}
           />

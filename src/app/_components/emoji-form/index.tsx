@@ -249,13 +249,13 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
             disabled={isSubmitting || isLoadingProfile}
             size="icon"
             variant="default"
-            className="absolute bottom-3 left-3 rounded-lg bg-black hover:bg-black/90"
+            className="absolute bottom-3 left-3 rounded-lg bg-black hover:bg-black/90 w-6 h-6 sm:w-10 sm:h-10"
             aria-label="צור אימוג׳י"
           >
             {isSubmitting || isLoadingProfile ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
             ) : (
-              <Send className="h-5 w-5 transform scale-x-[-1]" />
+              <Send className="h-3 w-3 sm:h-5 sm:w-5 transform scale-x-[-1]" />
             )}
           </Button>
         </div>
