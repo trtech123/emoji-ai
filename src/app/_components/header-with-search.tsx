@@ -9,11 +9,19 @@ import { BODY_PADDING } from '@/lib/constants'
 export function HeaderWithSearch() {
   const pathname = usePathname()
   const isSearchPage = pathname === '/search'
+  const isHomePage = pathname === '/'
+  const isEmojiPage = pathname.startsWith('/p/')
+  
+  // Hide header on mobile for home and emoji pages
+  if ((isHomePage || isEmojiPage) && typeof window !== 'undefined' && window.innerWidth < 640) {
+    return null
+  }
   
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className={cn("container flex h-14 items-center gap-4", BODY_PADDING)}>
-        <div className="flex-none">
+        {/* Hide title on mobile for search page */}
+        <div className={cn("flex-none", isSearchPage ? "hidden md:block" : "")}>
           <span className="font-bold text-[10px] sm:text-lg text-transparent">אימוג׳י AI</span>
         </div>
         <div className={cn("flex-grow px-4", isSearchPage ? "block" : "hidden md:flex")}>
@@ -21,7 +29,8 @@ export function HeaderWithSearch() {
             <SearchBar className="max-w-xl mx-auto" />
           </div>
         </div>
-        <nav className="flex-none flex items-center">
+        {/* Hide auth button on mobile for search page */}
+        <nav className={cn("flex-none flex items-center", isSearchPage ? "hidden md:flex" : "")}>
           <AuthButton />
         </nav>
       </div>
