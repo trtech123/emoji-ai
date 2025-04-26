@@ -3,16 +3,29 @@
 import { Button } from '@/components/ui/button';
 import { Share, Download, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ActionButtonsProps {
   displayImageUrl: string | null;
   emojiId: string;
   emojiPrompt: string;
+  isMobile?: boolean;
 }
 
-export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionButtonsProps) {
+export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt, isMobile = false }: ActionButtonsProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   const handleShare = async () => {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -91,6 +104,32 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
       setIsDownloading(false);
     }
   };
+
+  if (isMobileView) {
+    return (
+      <div className="flex gap-2">
+        <Button 
+          className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white h-12"
+          onClick={handleDownload}
+          disabled={isDownloading || !displayImageUrl}
+        >
+          {isDownloading ? (
+            <span className="animate-spin mr-2 h-5 w-5">⏳</span>
+          ) : (
+            <Download className="mr-2 h-5 w-5" />
+          )}
+          Download
+        </Button>
+        <Button 
+          className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white h-12"
+          onClick={handleShare}
+        >
+          <Share className="mr-2 h-5 w-5" />
+          Share
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
