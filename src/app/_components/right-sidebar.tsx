@@ -32,16 +32,16 @@ export default function RightSidebar() {
   ]
 
   return (
-    <aside className={`${isMobile ? 'w-32' : 'w-64'} border-r bg-neutral-50 dark:bg-neutral-950 p-4 flex flex-col flex-shrink-0 sticky top-[56px] z-30 h-[calc(100vh-56px)] overflow-y-auto`}>
+    <aside className={`${isMobile ? 'w-22' : 'w-64'} border-r bg-neutral-50 dark:bg-neutral-950 p-4 flex flex-col flex-shrink-0 sticky top-[56px] z-30 h-[calc(100vh-56px)] overflow-y-auto`}>
       <nav className="flex-grow">
         <ul>
           {sidebarItems.map((item) => (
             <li key={item.name}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-2 py-2 ${isMobile ? 'text-xs' : 'text-sm'} font-medium rounded-md hover:bg-accent`}
+                className={`flex items-center gap-2 px-2 py-2 ${isMobile ? 'text-[10px]' : 'text-sm'} font-medium rounded-md hover:bg-accent`}
               >
-                <item.icon className="h-4 w-4 text-muted-foreground" />
+                <item.icon className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground`} />
                 <span>{item.name}</span>
               </Link>
             </li>
