@@ -11,6 +11,9 @@ import { cn, formatPrompt } from "@/lib/utils"
 import useSWR from "swr"
 import { formatDistanceToNow } from "date-fns"
 import { DownloadButton } from "./download-button"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
 
 interface ButtonCardProps {
   id: string
@@ -59,15 +62,39 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
 
   const hebrewTime = `לפני ${timeAgo} ${getHebrewTimeUnit(timeAgo)}`
 
+  const [isLoadingImage, setIsLoadingImage] = useState(true)
+
   return (
-    <div className="group relative aspect-square w-full overflow-hidden rounded-xl bg-gray-100">
-      <Image
-        src={imageUrl}
-        alt={prompt}
-        fill
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        className="object-contain p-8 transition-transform duration-200 group-hover:scale-110"
-      />
+    <Card
+      className={cn(
+        "relative overflow-hidden transition-all duration-200 hover:shadow-lg",
+        "group aspect-square w-full overflow-hidden rounded-xl bg-gray-100"
+      )}
+    >
+      <Button
+        variant="ghost"
+        className="w-full h-full p-0"
+        onClick={() => {
+          // Implement the click handler
+        }}
+        disabled={isLoadingImage}
+      >
+        <div className="relative w-full h-full">
+          {isLoadingImage && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          <Image
+            src={imageUrl}
+            alt={prompt}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-contain p-3 sm:p-8 transition-transform duration-200 group-hover:scale-110"
+            onLoad={() => setIsLoadingImage(false)}
+          />
+        </div>
+      </Button>
       <div
         className={cn(
           "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 transition-opacity duration-200",
@@ -89,6 +116,6 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
           />
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
