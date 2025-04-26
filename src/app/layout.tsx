@@ -65,7 +65,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="he" dir="rtl" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <style jsx global>{`
+          @media (max-width: 640px) {
+            input, textarea, select {
+              font-size: 16px !important;
+            }
+          }
+        `}</style>
       </head>
       <body className={cn("antialiased font-sans scroll-smooth", inter.className)}>
         <div className="flex flex-row min-h-screen">
