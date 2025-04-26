@@ -159,7 +159,7 @@ export default async function EmojiPage({ params }: PageProps) {
               {emoji.prompt}
             </h1>
 
-            <div className="space-y-3 text-sm text-muted-foreground md:border-t md:border-b py-2 md:py-4 mb-2 md:mb-6">
+            <div className="space-y-3 text-sm text-muted-foreground md:border-t md:border-b py-1 md:py-4 mb-1 md:mb-6">
               {/* Hide model and dimensions on mobile */}
               <div className="hidden md:flex justify-between">
                 <span>מודל</span>
