@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import {
   PlusSquare,
   Search,
-  Home,
   User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -50,8 +49,7 @@ export function MobileBottomNav() {
   }
   
   const navItems = [
-    { name: 'בית', href: '/', icon: Home, requiresAuth: false },
-    { name: 'יצירה', href: '/create', icon: PlusSquare, requiresAuth: true },
+    { name: 'יצירה', href: '/', icon: PlusSquare, requiresAuth: true },
     { name: 'חיפוש', href: '/search', icon: Search, requiresAuth: true },
     { name: 'פרופיל', href: '/profile', icon: User, requiresAuth: true },
   ]
