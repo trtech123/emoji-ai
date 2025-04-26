@@ -234,7 +234,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
             name="prompt"
             required
             placeholder="תאר את התמונה שלך (למשל, חתול אסטרונאוט)"
-            className="pr-14 py-3 pl-12 text-sm sm:text-base resize-none border rounded-lg shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
+            className="pr-14 py-3 pl-12 text-[10px] sm:text-base resize-none border rounded-lg shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
             rows={3}
             disabled={isSubmitting || isLoadingProfile}
             onKeyDown={(e) => {

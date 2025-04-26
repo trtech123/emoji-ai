@@ -68,7 +68,8 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
     <Card
       className={cn(
         "relative overflow-hidden transition-all duration-200 hover:shadow-lg",
-        "group aspect-square w-full overflow-hidden rounded-xl bg-gray-100"
+        "group aspect-square w-full overflow-hidden rounded-xl bg-gray-100",
+        "max-w-[60%] sm:max-w-full mx-auto"
       )}
     >
       <Button
@@ -89,8 +90,8 @@ export function ButtonCard({ id, prompt, imageUrl, createdAt, alwaysShowDownload
             src={imageUrl}
             alt={prompt}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-contain p-3 sm:p-8 transition-transform duration-200 group-hover:scale-110"
+            sizes="(max-width: 768px) 60vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-contain p-2 sm:p-8 transition-transform duration-200 group-hover:scale-110"
             onLoad={() => setIsLoadingImage(false)}
           />
         </div>
