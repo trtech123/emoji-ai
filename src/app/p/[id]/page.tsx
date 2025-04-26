@@ -115,6 +115,18 @@ export default async function EmojiPage({ params }: PageProps) {
     <div className="px-4 pt-8">
       <div className="max-w-5xl mx-auto bg-background rounded-lg border shadow-sm overflow-hidden">
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
+          {/* Mobile: Show creator info and prompt above image */}
+          <div className="lg:hidden flex flex-col p-4 border-b">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium">
+                {(userEmail ? userEmail[0] : displayUsername[0]).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium text-foreground">{displayUsername}</span>
+            </div>
+            <h1 className="text-2xl font-bold mb-4 break-words">
+              {emoji.prompt}
+            </h1>
+          </div>
 
           <div className="flex-shrink-0 lg:w-1/2 flex flex-col items-center bg-stone-100 dark:bg-stone-900 p-6 md:p-8 rounded-l-lg">
             <div className="relative aspect-square w-full max-w-md rounded-lg overflow-hidden">
@@ -135,23 +147,25 @@ export default async function EmojiPage({ params }: PageProps) {
           </div>
 
           <div className="flex-grow lg:w-1/2 flex flex-col p-6 md:p-8 rounded-r-lg">
-            <div className="flex items-center gap-2 mb-4">
+            {/* Desktop: Show creator info and prompt */}
+            <div className="hidden lg:flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium">
                 {(userEmail ? userEmail[0] : displayUsername[0]).toUpperCase()}
               </div>
               <span className="text-sm font-medium text-foreground">{displayUsername}</span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold mb-6 break-words">
+            <h1 className="hidden lg:block text-3xl md:text-4xl font-bold mb-6 break-words">
               {emoji.prompt}
             </h1>
 
             <div className="space-y-3 text-sm text-muted-foreground border-t border-b py-4 mb-6">
-              <div className="flex justify-between">
+              {/* Hide model and dimensions on mobile */}
+              <div className="hidden md:flex justify-between">
                 <span>מודל</span>
                 <span className="text-foreground font-medium">Emoji</span>
               </div>
-              <div className="flex justify-between">
+              <div className="hidden md:flex justify-between">
                 <span>מידות</span>
                 <span className="text-foreground font-medium">768x768</span>
               </div>

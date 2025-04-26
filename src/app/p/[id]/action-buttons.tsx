@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Share, Download, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ActionButtonsProps {
   displayImageUrl: string | null;
@@ -13,6 +13,22 @@ interface ActionButtonsProps {
 
 export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionButtonsProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   const handleShare = async () => {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -107,10 +123,11 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
           הורדה
         </Button>
       )}
-      {displayImageUrl && (
-          <Button variant="outline" onClick={handleCopy}>
-              <Copy className="ml-2 h-4 w-4" /> העתק קישור
-          </Button>
+      {/* Only show copy link button on desktop */}
+      {displayImageUrl && !isMobile && (
+        <Button variant="outline" onClick={handleCopy}>
+          <Copy className="ml-2 h-4 w-4" /> העתק קישור
+        </Button>
       )}
     </div>
   );
