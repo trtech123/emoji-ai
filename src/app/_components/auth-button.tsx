@@ -10,6 +10,7 @@ import { signOutAction } from '../actions'
 import toast from 'react-hot-toast'
 import { SITE_URL, AUTH_CALLBACK_URL } from '@/lib/constants'
 import { AuthDialog } from './auth-dialog'
+import { signInWithGoogle } from '@/lib/auth-utils'
 
 export function AuthButton() {
   const supabase = createClient()
@@ -104,6 +105,15 @@ export function AuthButton() {
     });
   }
 
+  const handleSignIn = async () => {
+    try {
+      await signInWithGoogle()
+    } catch (error) {
+      toast.error('שגיאה בהתחברות עם Google')
+      console.error('Error signing in with Google:', error)
+    }
+  }
+
   if (user) {
     return (
       <div className="flex items-center gap-2">
@@ -133,22 +143,8 @@ export function AuthButton() {
   }
 
   return (
-    <>
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>
-        <LogIn className="mr-2 h-4 w-4" /> התחבר
-      </Button>
-      <AuthDialog isOpen={isOpen} onOpenChange={(open) => {
-        if (open) {
-          console.log('[Auth Dialog Debug] Environment & URLs:', {
-            NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-            SITE_URL,
-            AUTH_CALLBACK_URL,
-            currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'SSR',
-            currentURL: typeof window !== 'undefined' ? window.location.href : 'SSR',
-          });
-        }
-        setIsOpen(open);
-      }} />
-    </>
+    <Button variant="ghost" size="sm" onClick={handleSignIn}>
+      <LogIn className="mr-2 h-4 w-4" /> התחבר
+    </Button>
   )
 } 

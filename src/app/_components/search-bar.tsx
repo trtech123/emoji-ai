@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useDebounce } from "@/hooks/use-debounce";
+import { createClient } from '@/lib/supabase/client';
+import { signInWithGoogle } from '@/lib/auth-utils';
+import toast from 'react-hot-toast';
 
 // Simple debounce function
 function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
@@ -27,65 +31,77 @@ interface SearchBarProps {
 
 export function SearchBar({ className }: SearchBarProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-  // Initialize state from URL search param if present
-  const initialQuery = searchParams.get('q') || "";
-  const [searchValue, setSearchValue] = useState(initialQuery);
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
 
-  // Function to update URL query parameter
-  const updateQueryParam = useCallback((query: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (query) {
-      params.set('q', query);
-    } else {
-      params.delete('q');
-    }
-    if (pathname === '/search') {
-      router.replace(`/search?${params.toString()}`);
-    } else {
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase.auth]);
+
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      const params = new URLSearchParams();
+      if (query) {
+        params.set("q", query);
+      }
       router.push(`/search?${params.toString()}`);
-    }
-  }, [searchParams, router, pathname]);
-
-  // Debounced version of the update function
-  const debouncedUpdateQueryParam = useCallback(
-    debounce((query: string) => updateQueryParam(query), 300),
-    [updateQueryParam]
+    },
+    [router]
   );
 
-  // Handle input change
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setSearchValue(newValue);
-    debouncedUpdateQueryParam(newValue.trim());
+  const handleAuthRequiredAction = async () => {
+    if (!user) {
+      try {
+        await signInWithGoogle();
+      } catch (error) {
+        toast.error('שגיאה בהתחברות עם Google');
+        console.error('Error signing in with Google:', error);
+      }
+    } else {
+      handleSearch(searchQuery);
+    }
   };
-
-  // Handle direct form submission (e.g., pressing Enter)
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Trigger immediate update/navigation on submit, bypassing debounce
-    updateQueryParam(searchValue.trim()); 
-  };
-
-  // Sync state if URL changes externally (e.g., browser back/forward)
-  useEffect(() => {
-    setSearchValue(searchParams.get('q') || "");
-  }, [searchParams]);
 
   return (
-    // Use a form element for submission handling
-    <form onSubmit={handleSearchSubmit} className={`relative w-full ${className || ''}`}>
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type="search"
-        placeholder="חפש והורד מעל 6,555,285 אימוג'י AI" // Translated placeholder
-        className="w-full rounded-full bg-muted pl-9 pr-4 py-2 text-[10px] sm:text-sm" // Adjust padding for icon
-        value={searchValue} // Controlled input
-        onChange={handleChange} // Update state on change
-      />
-      {/* Optionally add a hidden submit button or rely on Enter key press */}
-      <button type="submit" hidden />
-    </form>
+    <div className="relative w-full max-w-sm">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleAuthRequiredAction();
+        }}
+        className="relative"
+      >
+        <input
+          type="text"
+          placeholder="חיפוש אימוג'ים..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pr-10 py-2 text-sm sm:text-base rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+        <button
+          type="submit"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+      </form>
+    </div>
   );
 } 
