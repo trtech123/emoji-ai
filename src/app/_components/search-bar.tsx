@@ -66,7 +66,19 @@ export function SearchBar({ className }: SearchBarProps) {
     [router]
   );
 
-  const handleAuthRequiredAction = async () => {
+  const handleInputFocus = async () => {
+    if (!user) {
+      try {
+        await signInWithGoogle();
+      } catch (error) {
+        toast.error('שגיאה בהתחברות עם Google');
+        console.error('Error signing in with Google:', error);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!user) {
       try {
         await signInWithGoogle();
@@ -81,18 +93,13 @@ export function SearchBar({ className }: SearchBarProps) {
 
   return (
     <div className="relative w-full max-w-sm">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleAuthRequiredAction();
-        }}
-        className="relative"
-      >
+      <form onSubmit={handleSubmit} className="relative">
         <input
           type="text"
           placeholder="חיפוש אימוג'ים..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={handleInputFocus}
           className="w-full pr-10 py-2 text-sm sm:text-base rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <button

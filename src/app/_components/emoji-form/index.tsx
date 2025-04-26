@@ -6,6 +6,7 @@ import { Loader2, Sparkles, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
+import { signInWithGoogle } from '@/lib/auth-utils'
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -137,16 +138,20 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     }
 
     if (!user) {
-      setError("אנא התחבר כדי ליצור אימוג׳ים.");
-      setShowLoginModal(true);
-      toast.error("אנא התחבר תחילה.");
-      return;
+      try {
+        await signInWithGoogle();
+        return;
+      } catch (error) {
+        toast.error('שגיאה בהתחברות עם Google');
+        console.error('Error signing in with Google:', error);
+        return;
+      }
     }
 
     if (!userProfile) {
-        setError("לא ניתן היה לטעון או ליצור את הפרופיל שלך. אנא רענן את הדף ונסה שוב.");
-        toast.error("לא ניתן לטעון פרופיל. נסה לרענן.");
-        return;
+      setError("לא ניתן היה לטעון או ליצור את הפרופיל שלך. אנא רענן את הדף ונסה שוב.");
+      toast.error("לא ניתן לטעון פרופיל. נסה לרענן.");
+      return;
     }
 
     const formData = new FormData(formRef.current!); 
@@ -162,7 +167,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
     setIsSubmitting(true);
     setError(null);
-    setShowLoginModal(false);
 
     const isAdmin = userProfile.is_admin;
     const availableCredits = userProfile.generation_credits;
@@ -182,10 +186,14 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       });
 
       if (response.status === 401) {
-        setError("שגיאת אימות. אנא התחבר שוב.");
-        setShowLoginModal(true);
-        toast.error("אנא התחבר שוב.");
-        return;
+        try {
+          await signInWithGoogle();
+          return;
+        } catch (error) {
+          toast.error('שגיאה בהתחברות עם Google');
+          console.error('Error signing in with Google:', error);
+          return;
+        }
       }
 
       if (response.status === 402) {
