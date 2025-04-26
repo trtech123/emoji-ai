@@ -61,7 +61,7 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
         width: '100%',
         padding: isMobile ? '16px' : '12px',
         height: 'auto',
-        fontSize: isMobile ? '18px' : '16px',
+        fontSize: isMobile ? '14px' : '16px',
         justifyContent: 'center',
         borderRadius: '8px',
         marginBottom: '0'
@@ -71,8 +71,14 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
       },
       message: {
         padding: '12px',
-        fontSize: '14px',
+        fontSize: isMobile ? '12px' : '14px',
         borderRadius: '8px'
+      },
+      label: {
+        fontSize: isMobile ? '12px' : '14px'
+      },
+      input: {
+        fontSize: isMobile ? '12px' : '14px'
       }
     }
   }
@@ -82,7 +88,7 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-semibold">התחברות או הרשמה</h2>
+          <h2 className="text-lg font-semibold">התחברות או הרשמה</h2>
           <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
             <X className="h-5 w-5" />
           </Button>

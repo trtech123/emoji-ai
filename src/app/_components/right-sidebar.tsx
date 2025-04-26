@@ -39,10 +39,10 @@ export default function RightSidebar() {
             <li key={item.name}>
               <Link
                 href={item.href}
-                className="flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md hover:bg-accent"
+                className={`flex items-center gap-3 px-2 py-2 ${isMobile ? 'text-xs' : 'text-sm'} font-medium rounded-md hover:bg-accent`}
               >
                 <item.icon className="h-4 w-4 text-muted-foreground" />
-                <span className={isMobile ? 'hidden' : ''}>{item.name}</span>
+                <span>{item.name}</span>
               </Link>
             </li>
           ))}
