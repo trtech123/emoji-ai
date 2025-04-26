@@ -80,7 +80,7 @@ export function SearchBar({ className }: SearchBarProps) {
       <Input
         type="search"
         placeholder="חפש והורד מעל 6,555,285 אימוג'י AI" // Translated placeholder
-        className="w-full rounded-full bg-muted pl-9 pr-4 py-2 text-sm" // Adjust padding for icon
+        className="w-full rounded-full bg-muted pl-9 pr-4 py-2 text-[10px] sm:text-sm" // Adjust padding for icon
         value={searchValue} // Controlled input
         onChange={handleChange} // Update state on change
       />
