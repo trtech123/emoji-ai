@@ -107,9 +107,19 @@ export function AuthButton() {
   if (user) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground hidden sm:inline-block">
-          {user.email}
-        </span>
+        <div className="flex items-center">
+          {user.user_metadata?.avatar_url ? (
+            <img 
+              src={user.user_metadata.avatar_url} 
+              alt="Profile" 
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          ) : (
+            <span className="text-sm text-muted-foreground hidden sm:inline-block">
+              {user.email}
+            </span>
+          )}
+        </div>
         <Button variant="ghost" size="sm" onClick={handleSignOut} title="התנתק" disabled={isPending}>
           {isPending ? (
             <span className="animate-spin h-4 w-4">⏳</span>
