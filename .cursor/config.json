@@ -1,0 +1,19 @@
+{
+  "rules": [
+    {
+      "name": "TypeScript and React Standards",
+      "path": "rules/typescript-react-standards.md",
+      "description": "Comprehensive coding standards for TypeScript, React, and Next.js projects with cross-platform capabilities"
+    }
+  ],
+  "settings": {
+    "formatOnSave": true,
+    "defaultFormatter": "prettier",
+    "typescript": {
+      "preferences": {
+        "importModuleSpecifier": "non-relative",
+        "quoteStyle": "single"
+      }
+    }
+  }
+} 
