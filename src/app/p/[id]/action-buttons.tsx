@@ -109,12 +109,12 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button variant="outline" onClick={handleShare}>
+    <div className="flex flex-wrap gap-2 md:gap-2">
+      <Button variant="outline" onClick={handleShare} className="flex-1 md:flex-none">
         <Share className="ml-2 h-4 w-4" /> שתף
       </Button>
       {displayImageUrl && (
-        <Button variant="outline" onClick={handleDownload} disabled={isDownloading}>
+        <Button variant="outline" onClick={handleDownload} disabled={isDownloading} className="flex-1 md:flex-none">
           {isDownloading ? (
             <span className="animate-spin ml-2 h-4 w-4">⏳</span>
           ) : (

@@ -116,14 +116,14 @@ export default async function EmojiPage({ params }: PageProps) {
       <div className="max-w-5xl mx-auto bg-background rounded-lg border shadow-sm overflow-hidden">
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           {/* Mobile: Show creator info and prompt above image */}
-          <div className="lg:hidden flex flex-col p-4 border-b">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="lg:hidden flex flex-col p-4 pb-0">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-medium">
                 {(userEmail ? userEmail[0] : displayUsername[0]).toUpperCase()}
               </div>
               <span className="text-sm font-medium text-foreground">{displayUsername}</span>
             </div>
-            <h1 className="text-2xl font-bold mb-4 break-words">
+            <h1 className="text-2xl font-bold mb-0 break-words">
               {emoji.prompt}
             </h1>
           </div>
@@ -159,7 +159,7 @@ export default async function EmojiPage({ params }: PageProps) {
               {emoji.prompt}
             </h1>
 
-            <div className="space-y-3 text-sm text-muted-foreground border-t border-b py-4 mb-6">
+            <div className="space-y-3 text-sm text-muted-foreground md:border-t md:border-b py-2 md:py-4 mb-2 md:mb-6">
               {/* Hide model and dimensions on mobile */}
               <div className="hidden md:flex justify-between">
                 <span>מודל</span>
@@ -175,7 +175,7 @@ export default async function EmojiPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="mt-auto pt-4">
+            <div className="mt-auto pt-0 md:pt-4">
               <ActionButtons 
                 displayImageUrl={displayImageUrl}
                 emojiId={emoji.id}
