@@ -88,16 +88,18 @@ export function AuthDialog({ isOpen, onOpenChange }: AuthDialogProps) {
           </Button>
         </div>
         <div className="flex-1 flex items-center justify-center p-4">
-          <Auth
-            supabaseClient={supabase}
-            appearance={authAppearance}
-            theme="dark"
-            providers={['google']}
-            onlyThirdPartyProviders
-            redirectTo={`${SITE_URL}/auth/callback`}
-            view="sign_in"
-            showLinks={false}
-          />
+          <div className="w-full max-w-[50%] ml-auto">
+            <Auth
+              supabaseClient={supabase}
+              appearance={authAppearance}
+              theme="dark"
+              providers={['google']}
+              onlyThirdPartyProviders
+              redirectTo={`${SITE_URL}/auth/callback`}
+              view="sign_in"
+              showLinks={false}
+            />
+          </div>
         </div>
       </div>
     )

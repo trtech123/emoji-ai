@@ -5,15 +5,34 @@ import {
   PlusSquare,
   Search,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function RightSidebar() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    
+    // Initial check
+    checkIfMobile()
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile)
+  }, [])
+
   const sidebarItems = [
     { name: 'יצירה', href: '/', icon: PlusSquare },
     { name: 'חיפוש', href: '/search', icon: Search },
   ]
 
   return (
-    <aside className="w-64 border-r bg-neutral-50 dark:bg-neutral-950 p-4 flex flex-col flex-shrink-0 sticky top-[56px] z-30 h-[calc(100vh-56px)] overflow-y-auto">
+    <aside className={`${isMobile ? 'w-32' : 'w-64'} border-r bg-neutral-50 dark:bg-neutral-950 p-4 flex flex-col flex-shrink-0 sticky top-[56px] z-30 h-[calc(100vh-56px)] overflow-y-auto`}>
       <nav className="flex-grow">
         <ul>
           {sidebarItems.map((item) => (
@@ -23,7 +42,7 @@ export default function RightSidebar() {
                 className="flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md hover:bg-accent"
               >
                 <item.icon className="h-4 w-4 text-muted-foreground" />
-                <span>{item.name}</span>
+                <span className={isMobile ? 'hidden' : ''}>{item.name}</span>
               </Link>
             </li>
           ))}
