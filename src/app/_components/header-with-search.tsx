@@ -5,6 +5,8 @@ import { SearchBar } from './search-bar'
 import { AuthButton } from './auth-button'
 import { cn } from '@/lib/utils'
 import { BODY_PADDING } from '@/lib/constants'
+import { Home } from 'lucide-react'
+import Link from 'next/link'
 
 export function HeaderWithSearch() {
   const pathname = usePathname()
@@ -30,7 +32,11 @@ export function HeaderWithSearch() {
           </div>
         </div>
         {/* Hide auth button on mobile for search page */}
-        <nav className={cn("flex-none flex items-center", isSearchPage ? "hidden md:flex" : "")}>
+        <nav className={cn("flex-none flex items-center gap-4", isSearchPage ? "hidden md:flex" : "")}>
+          <Link href="/" className="hidden md:flex items-center gap-2 text-sm font-medium hover:text-primary">
+            <Home className="h-4 w-4" />
+            <span>בית</span>
+          </Link>
           <AuthButton />
         </nav>
       </div>
