@@ -31,16 +31,26 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
   }, []);
 
   const handleShare = async () => {
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    if (!displayImageUrl) return;
     
     if (typeof navigator !== 'undefined' && 'share' in navigator && typeof navigator.share === 'function') {
       try {
+        // Fetch the image as a blob
+        const response = await fetch(displayImageUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        
+        // Create a File object from the blob
+        const file = new File([blob], `${emojiPrompt.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${emojiId}.png`, { type: 'image/png' });
+        
+        // Share the image file
         await navigator.share({
           title: `אימוג׳י: ${emojiPrompt}`,
           text: `בוא לראות את האימוג׳י שיצרתי: ${emojiPrompt}`,
-          url: shareUrl,
+          files: [file],
         });
-        toast.success('שותף בהצלחה!');
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
           console.error('Share failed:', err);
@@ -78,7 +88,6 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
     if (!displayImageUrl) return;
 
     setIsDownloading(true);
-    toast.loading('מתחיל הורדה...', { id: 'download-toast' });
 
     try {
       const response = await fetch(displayImageUrl);
@@ -98,11 +107,8 @@ export function ActionButtons({ displayImageUrl, emojiId, emojiPrompt }: ActionB
       document.body.removeChild(link);
 
       URL.revokeObjectURL(blobUrl);
-      toast.success('ההורדה החלה!', { id: 'download-toast' });
     } catch (error) {
       console.error('Download failed:', error);
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`ההורדה נכשלה: ${errorMsg}`, { id: 'download-toast' });
     } finally {
       setIsDownloading(false);
     }
