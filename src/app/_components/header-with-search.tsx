@@ -33,11 +33,10 @@ export function HeaderWithSearch() {
         </div>
         {/* Hide auth button on mobile for search page */}
         <nav className={cn("flex-none flex items-center gap-4", isSearchPage ? "hidden md:flex" : "")}>
-          <Link href="/" className="hidden md:flex items-center gap-2 text-sm font-medium hover:text-primary">
-            <Home className="h-4 w-4" />
-            <span>בית</span>
-          </Link>
           <AuthButton />
+          <Link href="/" className="hidden md:flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent">
+            <Home className="h-4 w-4" />
+          </Link>
         </nav>
       </div>
     </header>
