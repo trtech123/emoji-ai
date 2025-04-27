@@ -22,24 +22,20 @@ export function HeaderWithSearch() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className={cn("container flex h-14 items-center justify-between", BODY_PADDING)}>
-        <div className="flex items-center gap-4">
-          {/* Hide title on mobile for search page */}
-          <div className={cn("flex-none", isSearchPage ? "hidden md:block" : "")}>
-            <span className="font-bold text-[10px] sm:text-lg text-transparent">אימוג׳י AI</span>
-          </div>
-          <div className={cn("flex-grow px-4", isSearchPage ? "block" : "hidden md:flex")}>
-            <div className="w-full">
-              <SearchBar className="max-w-xl mx-auto" />
-            </div>
-          </div>
-          {/* Hide auth button on mobile for search page */}
-          <div className={cn("flex-none", isSearchPage ? "hidden md:block" : "")}>
-            <AuthButton />
-          </div>
-        </div>
+        {/* Right - Home button */}
         <Link href="/" className="hidden md:flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent">
           <Home className="h-4 w-4" />
         </Link>
+
+        {/* Center - Search bar */}
+        <div className={cn("flex-grow max-w-xl px-4", isSearchPage ? "block" : "hidden md:block")}>
+          <SearchBar className="w-full" />
+        </div>
+
+        {/* Left - Auth button */}
+        <div className={cn("flex-none", isSearchPage ? "hidden md:block" : "")}>
+          <AuthButton />
+        </div>
       </div>
     </header>
   )
