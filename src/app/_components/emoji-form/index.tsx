@@ -22,6 +22,7 @@ import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import Link from "next/link"
 import { AuthDialog } from "../auth-dialog"
+import { PaymentDialog } from "../payment-dialog"
 
 interface Profile {
   id: string
@@ -43,6 +44,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
@@ -175,6 +177,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       setError("נגמרו לך קרדיטי היצירה.");
       toast.error("אין לך מספיק קרדיטים.");
       setIsSubmitting(false);
+      setShowPaymentModal(true);
       return;
     }
 
@@ -199,7 +202,8 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       if (response.status === 402) {
         setError("נגמרו לך קרדיטי היצירה.");
         toast.error("אין לך מספיק קרדיטים.");
-        setIsSubmitting(false); 
+        setIsSubmitting(false);
+        setShowPaymentModal(true);
         return;
       }
 
@@ -274,6 +278,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       )}
 
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
+      <PaymentDialog isOpen={showPaymentModal} onOpenChange={setShowPaymentModal} />
     </div>
   )
 }

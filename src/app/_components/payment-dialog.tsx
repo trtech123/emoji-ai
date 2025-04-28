@@ -5,7 +5,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -16,11 +15,11 @@ interface PaymentDialogProps {
 }
 
 export function PaymentDialog({ isOpen, onOpenChange }: PaymentDialogProps) {
-  const { initiateCheckout, isPending } = useCheckout();
+  const checkout = useCheckout();
 
-  const handlePurchase = () => {
-    initiateCheckout({
-      variantId: "123", // Replace with your actual variant ID from Lemon Squeezy
+  const handlePurchase = (variantId: string) => {
+    checkout.mutate({
+      variantId,
       customData: {
         type: 'token_purchase',
       },
@@ -46,10 +45,10 @@ export function PaymentDialog({ isOpen, onOpenChange }: PaymentDialogProps) {
                   <p className="text-sm text-muted-foreground">100 tokens</p>
                 </div>
                 <Button 
-                  onClick={handlePurchase}
-                  disabled={isPending}
+                  onClick={() => handlePurchase(process.env.NEXT_PUBLIC_LEMON_SQUEEZY_BASIC_VARIANT_ID || '')}
+                  disabled={checkout.isPending}
                 >
-                  {isPending ? (
+                  {checkout.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
@@ -65,10 +64,10 @@ export function PaymentDialog({ isOpen, onOpenChange }: PaymentDialogProps) {
                   <p className="text-sm text-muted-foreground">500 tokens</p>
                 </div>
                 <Button 
-                  onClick={handlePurchase}
-                  disabled={isPending}
+                  onClick={() => handlePurchase(process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRO_VARIANT_ID || '')}
+                  disabled={checkout.isPending}
                 >
-                  {isPending ? (
+                  {checkout.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...

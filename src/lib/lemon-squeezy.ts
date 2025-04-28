@@ -3,17 +3,18 @@ import { z } from 'zod';
 const checkoutResponseSchema = z.object({
   data: z.object({
     attributes: z.object({
-      url: z.string().url(),
+      url: z.string(),
     }),
   }),
 });
 
-export interface CreateCheckoutOptions {
-  variantId: number;
-  customData?: Record<string, any>;
-}
-
-export async function createCheckout({ variantId, customData }: CreateCheckoutOptions) {
+export async function createCheckout({
+  variantId,
+  customData,
+}: {
+  variantId: string;
+  customData?: Record<string, unknown>;
+}) {
   const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
     method: 'POST',
     headers: {
@@ -25,7 +26,7 @@ export async function createCheckout({ variantId, customData }: CreateCheckoutOp
       data: {
         type: 'checkouts',
         attributes: {
-          store_id: parseInt(process.env.LEMON_SQUEEZY_STORE_ID!),
+          store_id: process.env.LEMON_SQUEEZY_STORE_ID,
           variant_id: variantId,
           custom_data: customData,
           success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
@@ -41,6 +42,6 @@ export async function createCheckout({ variantId, customData }: CreateCheckoutOp
   }
 
   const data = await response.json();
-  const validatedData = checkoutResponseSchema.parse(data);
-  return validatedData.data.attributes.url;
+  const parsed = checkoutResponseSchema.parse(data);
+  return parsed.data.attributes.url;
 } 

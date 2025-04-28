@@ -1,53 +1,37 @@
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { z } from 'zod';
 
-interface UseCheckoutOptions {
-  onSuccess?: (url: string) => void;
-  onError?: (error: Error) => void;
+const checkoutResponseSchema = z.object({
+  url: z.string().url(),
+});
+
+interface CheckoutParams {
+  variantId: string;
+  customData?: Record<string, unknown>;
 }
 
-interface CheckoutResponse {
-  url: string;
-}
-
-export function useCheckout(options: UseCheckoutOptions = {}) {
-  const router = useRouter();
-
-  const { mutate: initiateCheckout, isPending } = useMutation({
-    mutationFn: async ({ variantId, customData }: { variantId: string; customData?: Record<string, unknown> }) => {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ variantId, customData }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to initiate checkout');
-      }
-
-      return response.json() as Promise<CheckoutResponse>;
+async function createCheckoutSession(params: CheckoutParams) {
+  const response = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-    onSuccess: (data) => {
-      if (options.onSuccess) {
-        options.onSuccess(data.url);
-      } else {
-        router.push(data.url);
-      }
-    },
-    onError: (error: Error) => {
-      if (options.onError) {
-        options.onError(error);
-      } else {
-        console.error('Checkout error:', error);
-      }
-    },
+    body: JSON.stringify(params),
   });
 
-  return {
-    initiateCheckout,
-    isPending,
-  };
+  if (!response.ok) {
+    throw new Error('Failed to create checkout session');
+  }
+
+  const data = await response.json();
+  return checkoutResponseSchema.parse(data);
+}
+
+export function useCheckout() {
+  return useMutation({
+    mutationFn: createCheckoutSession,
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+  });
 } 

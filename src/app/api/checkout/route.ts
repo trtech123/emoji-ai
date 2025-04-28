@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { createCheckout } from '@/lib/lemon-squeezy';
 
 const checkoutSchema = z.object({
-  variantId: z.number(),
-  customData: z.record(z.any()).optional(),
+  variantId: z.string(),
+  customData: z.record(z.unknown()).optional(),
 });
 
 export async function POST(request: Request) {
@@ -12,7 +12,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { variantId, customData } = checkoutSchema.parse(body);
 
-    const checkoutUrl = await createCheckout({ variantId, customData });
+    const checkoutUrl = await createCheckout({
+      variantId,
+      customData,
+    });
+
     return NextResponse.json({ url: checkoutUrl });
   } catch (error) {
     console.error('Checkout error:', error);
