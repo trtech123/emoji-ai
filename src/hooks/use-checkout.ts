@@ -12,6 +12,8 @@ interface CheckoutParams {
 }
 
 async function createCheckoutSession(params: CheckoutParams) {
+  console.log('Initiating checkout with params:', params);
+  
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: {
@@ -34,6 +36,7 @@ export function useCheckout() {
   return useMutation({
     mutationFn: createCheckoutSession,
     onSuccess: (data) => {
+      console.log('Checkout successful, redirecting to:', data.url);
       window.location.href = data.url;
     },
     onError: (error) => {

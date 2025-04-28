@@ -10,9 +10,19 @@ const checkoutSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('Received checkout request:', body);
+    
     const { variantId, customData } = checkoutSchema.parse(body);
+    console.log('Parsed checkout data:', { variantId, customData });
 
-    console.log('Creating checkout with:', { variantId, customData });
+    // Validate that variantId is a valid number string
+    if (!/^\d+$/.test(variantId)) {
+      console.error('Invalid variant ID format:', variantId);
+      return NextResponse.json(
+        { error: 'Invalid variant ID format', message: 'Variant ID must be a numeric string' },
+        { status: 400 }
+      );
+    }
 
     const checkoutUrl = await createCheckout({
       variantId,

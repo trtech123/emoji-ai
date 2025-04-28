@@ -32,6 +32,22 @@ export async function createCheckout({
   }
 
   try {
+    // Log the request payload for debugging
+    const requestPayload = {
+      data: {
+        type: 'checkouts',
+        attributes: {
+          store_id: parseInt(process.env.LEMON_SQUEEZY_STORE_ID, 10),
+          variant_id: parseInt(variantId, 10),
+          custom_data: customData || {},
+          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
+          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`,
+        },
+      },
+    };
+    
+    console.log('Sending request to Lemon Squeezy:', JSON.stringify(requestPayload, null, 2));
+
     const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
       method: 'POST',
       headers: {
@@ -39,18 +55,7 @@ export async function createCheckout({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.LEMON_SQUEEZY_API_KEY}`,
       },
-      body: JSON.stringify({
-        data: {
-          type: 'checkouts',
-          attributes: {
-            store_id: process.env.LEMON_SQUEEZY_STORE_ID,
-            variant_id: variantId,
-            custom_data: customData,
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`,
-          },
-        },
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
     if (!response.ok) {
