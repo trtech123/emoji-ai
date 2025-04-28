@@ -1,4 +1,5 @@
 import { lemonSqueezy, LEMON_SQUEEZY_STORE_ID } from './lemonsqueezy';
+import { createCheckout as createLemonSqueezyCheckout } from '@lemonsqueezy/lemonsqueezy.js';
 
 interface CreateCheckoutOptions {
   variantId: number;
@@ -18,13 +19,18 @@ export async function createCheckout({
   }
 
   try {
-    const checkout = await lemonSqueezy.createCheckout({
-      storeId: parseInt(LEMON_SQUEEZY_STORE_ID),
+    const checkout = await createLemonSqueezyCheckout(
+      LEMON_SQUEEZY_STORE_ID,
       variantId,
-      customData,
-      successUrl,
-      cancelUrl,
-    });
+      {
+        checkoutData: {
+          custom: customData,
+        },
+        productOptions: {
+          redirectUrl: successUrl,
+        },
+      }
+    );
 
     return checkout;
   } catch (error) {

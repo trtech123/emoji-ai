@@ -1,7 +1,29 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { createHmac } from 'crypto';
 import { LEMON_SQUEEZY_WEBHOOK_SECRET, type LemonSqueezyWebhookEvent } from '@/lib/lemonsqueezy';
+
+async function verifyWebhookSignature(body: string, signature: string, secret: string) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+
+  const signatureBytes = new Uint8Array(
+    signature.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []
+  );
+
+  const data = encoder.encode(body);
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, data);
+  const calculatedSignature = Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return signature === calculatedSignature;
+}
 
 export async function POST(req: Request) {
   try {
@@ -14,11 +36,13 @@ export async function POST(req: Request) {
     }
 
     // Verify webhook signature
-    const hmac = createHmac('sha256', LEMON_SQUEEZY_WEBHOOK_SECRET);
-    hmac.update(body);
-    const calculatedSignature = hmac.digest('hex');
+    const isValid = await verifyWebhookSignature(
+      body,
+      signature,
+      LEMON_SQUEEZY_WEBHOOK_SECRET
+    );
 
-    if (signature !== calculatedSignature) {
+    if (!isValid) {
       return new NextResponse('Invalid signature', { status: 401 });
     }
 
