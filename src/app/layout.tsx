@@ -1,3 +1,5 @@
+'use client';
+
 import { APP_STORE_URL, PROD_URL } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import type { Metadata } from "next"
