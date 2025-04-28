@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
+import { toast } from 'react-hot-toast';
 
 const checkoutResponseSchema = z.object({
   url: z.string().url(),
@@ -19,11 +20,13 @@ async function createCheckoutSession(params: CheckoutParams) {
     body: JSON.stringify(params),
   });
 
+  const data = await response.json();
+  
   if (!response.ok) {
-    throw new Error('Failed to create checkout session');
+    console.error('Checkout error response:', data);
+    throw new Error(data.message || 'Failed to create checkout session');
   }
 
-  const data = await response.json();
   return checkoutResponseSchema.parse(data);
 }
 
@@ -32,6 +35,10 @@ export function useCheckout() {
     mutationFn: createCheckoutSession,
     onSuccess: (data) => {
       window.location.href = data.url;
+    },
+    onError: (error) => {
+      console.error('Checkout error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create checkout');
     },
   });
 } 

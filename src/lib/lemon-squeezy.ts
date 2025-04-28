@@ -15,33 +15,59 @@ export async function createCheckout({
   variantId: string;
   customData?: Record<string, unknown>;
 }) {
-  const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.LEMON_SQUEEZY_API_KEY}`,
-    },
-    body: JSON.stringify({
-      data: {
-        type: 'checkouts',
-        attributes: {
-          store_id: process.env.LEMON_SQUEEZY_STORE_ID,
-          variant_id: variantId,
-          custom_data: customData,
-          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`,
-        },
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create checkout');
+  // Check if required environment variables are set
+  if (!process.env.LEMON_SQUEEZY_API_KEY) {
+    console.error('LEMON_SQUEEZY_API_KEY is not set');
+    throw new Error('Lemon Squeezy API key is not configured');
+  }
+  
+  if (!process.env.LEMON_SQUEEZY_STORE_ID) {
+    console.error('LEMON_SQUEEZY_STORE_ID is not set');
+    throw new Error('Lemon Squeezy store ID is not configured');
+  }
+  
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    console.error('NEXT_PUBLIC_APP_URL is not set');
+    throw new Error('Application URL is not configured');
   }
 
-  const data = await response.json();
-  const parsed = checkoutResponseSchema.parse(data);
-  return parsed.data.attributes.url;
+  try {
+    const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.LEMON_SQUEEZY_API_KEY}`,
+      },
+      body: JSON.stringify({
+        data: {
+          type: 'checkouts',
+          attributes: {
+            store_id: process.env.LEMON_SQUEEZY_STORE_ID,
+            variant_id: variantId,
+            custom_data: customData,
+            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
+            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`,
+          },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Lemon Squeezy API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(`Failed to create checkout: ${errorData.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const parsed = checkoutResponseSchema.parse(data);
+    return parsed.data.attributes.url;
+  } catch (error) {
+    console.error('Checkout creation error:', error);
+    throw error;
+  }
 } 
