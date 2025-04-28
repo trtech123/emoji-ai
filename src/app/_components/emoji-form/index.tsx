@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import * as React from "react"
 import toast from "react-hot-toast"
 import { Loader2, Sparkles, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -39,18 +39,18 @@ interface EmojiFormProps {
 
 export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   const supabase = createClient()
-  const formRef = useRef<HTMLFormElement>(null)
-  const textAreaRef = useRef<HTMLTextAreaElement>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [userProfile, setUserProfile] = useState<Profile | null>(null)
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+  const formRef = React.useRef<HTMLFormElement>(null)
+  const textAreaRef = React.useRef<HTMLTextAreaElement>(null)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const [showLoginModal, setShowLoginModal] = React.useState(false)
+  const [showPaymentModal, setShowPaymentModal] = React.useState(false)
+  const [user, setUser] = React.useState<User | null>(null)
+  const [userProfile, setUserProfile] = React.useState<Profile | null>(null)
+  const [isLoadingProfile, setIsLoadingProfile] = React.useState(true)
   const router = useRouter()
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchUserProfile = async (currentUser: User) => {
       setIsLoadingProfile(true);
       setError(null);
@@ -126,7 +126,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     };
   }, [supabase]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (initialPrompt && textAreaRef.current) {
       textAreaRef.current.value = initialPrompt;
     }

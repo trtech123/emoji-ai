@@ -1,4 +1,4 @@
-import { Button } from 'tamagui';
+import { Button } from "@/components/ui/button";
 import { useCheckout } from '@/hooks/use-checkout';
 
 interface CheckoutButtonProps {
@@ -12,9 +12,8 @@ export function CheckoutButton({ variantId, customData, children }: CheckoutButt
 
   return (
     <Button
-      onPress={() => initiateCheckout({ variantId, customData })}
+      onClick={() => initiateCheckout({ variantId, customData })}
       disabled={isPending}
-      loading={isPending}
     >
       {children}
     </Button>

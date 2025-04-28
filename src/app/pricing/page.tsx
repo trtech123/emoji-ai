@@ -1,4 +1,3 @@
-import { Stack, Text, XStack, YStack } from 'tamagui';
 import { CheckoutButton } from '@/components/checkout-button';
 
 const PRICING_TIERS = [
@@ -42,48 +41,57 @@ const PRICING_TIERS = [
 
 export default function PricingPage() {
   return (
-    <YStack padding="$4" space="$4">
-      <Text fontSize="$8" fontWeight="bold" textAlign="center">
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-4xl font-bold text-center mb-2">
         Choose Your Plan
-      </Text>
-      <Text fontSize="$5" textAlign="center" color="$gray11">
+      </h1>
+      <p className="text-xl text-center text-gray-600 mb-8">
         Select the perfect plan for your needs
-      </Text>
-      <XStack flexWrap="wrap" justifyContent="center" gap="$4" paddingVertical="$4">
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {PRICING_TIERS.map((tier) => (
-          <Stack
+          <div
             key={tier.name}
-            width={300}
-            padding="$4"
-            borderRadius="$4"
-            borderWidth={1}
-            borderColor="$gray5"
-            space="$4"
+            className="border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
           >
-            <Text fontSize="$6" fontWeight="bold">
+            <h2 className="text-2xl font-bold mb-2">
               {tier.name}
-            </Text>
-            <Text fontSize="$8" fontWeight="bold">
+            </h2>
+            <div className="text-3xl font-bold mb-2">
               {tier.price}
-              <Text fontSize="$4" color="$gray11">/month</Text>
-            </Text>
-            <Text color="$gray11">{tier.description}</Text>
-            <YStack space="$2">
+              <span className="text-sm text-gray-500 font-normal">/month</span>
+            </div>
+            <p className="text-gray-600 mb-4">{tier.description}</p>
+            <ul className="space-y-2 mb-6">
               {tier.features.map((feature) => (
-                <Text key={feature} color="$gray12">
-                  ✓ {feature}
-                </Text>
+                <li key={feature} className="flex items-center">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                  {feature}
+                </li>
               ))}
-            </YStack>
+            </ul>
             <CheckoutButton
               variantId={tier.variantId!}
               customData={{ plan: tier.name.toLowerCase() }}
             >
               Get Started
             </CheckoutButton>
-          </Stack>
+          </div>
         ))}
-      </XStack>
-    </YStack>
+      </div>
+    </div>
   );
 } 
