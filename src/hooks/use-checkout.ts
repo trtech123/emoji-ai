@@ -1,57 +1,53 @@
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 interface UseCheckoutOptions {
-  variantId: number;
-  customData?: Record<string, any>;
-  successUrl?: string;
-  cancelUrl?: string;
+  onSuccess?: (url: string) => void;
+  onError?: (error: Error) => void;
 }
 
-export function useCheckout() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface CheckoutResponse {
+  url: string;
+}
 
-  const initiateCheckout = async ({
-    variantId,
-    customData,
-    successUrl,
-    cancelUrl,
-  }: UseCheckoutOptions) => {
-    setIsLoading(true);
-    setError(null);
+export function useCheckout(options: UseCheckoutOptions = {}) {
+  const router = useRouter();
 
-    try {
+  const { mutate: initiateCheckout, isPending } = useMutation({
+    mutationFn: async ({ variantId, customData }: { variantId: string; customData?: Record<string, unknown> }) => {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          variantId,
-          customData,
-          successUrl,
-          cancelUrl,
-        }),
+        body: JSON.stringify({ variantId, customData }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to initiate checkout');
       }
 
-      // Redirect to Lemon Squeezy checkout URL
-      window.location.href = data.data.attributes.url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return response.json() as Promise<CheckoutResponse>;
+    },
+    onSuccess: (data) => {
+      if (options.onSuccess) {
+        options.onSuccess(data.url);
+      } else {
+        router.push(data.url);
+      }
+    },
+    onError: (error: Error) => {
+      if (options.onError) {
+        options.onError(error);
+      } else {
+        console.error('Checkout error:', error);
+      }
+    },
+  });
 
   return {
     initiateCheckout,
-    isLoading,
-    error,
+    isPending,
   };
 } 

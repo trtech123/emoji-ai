@@ -11,6 +11,7 @@ import toast from 'react-hot-toast'
 import { SITE_URL, AUTH_CALLBACK_URL } from '@/lib/constants'
 import { AuthDialog } from './auth-dialog'
 import { signInWithGoogle } from '@/lib/auth-utils'
+import Image from 'next/image'
 
 export function AuthButton() {
   const supabase = createClient()
@@ -118,17 +119,13 @@ export function AuthButton() {
     return (
       <div className="flex items-center gap-2">
         <div className="flex items-center">
-          {user.user_metadata?.avatar_url ? (
-            <img 
-              src={user.user_metadata.avatar_url} 
-              alt="Profile" 
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            <span className="text-sm text-muted-foreground hidden sm:inline-block">
-              {user.email}
-            </span>
-          )}
+          <Image
+            src={user.user_metadata?.avatar_url || '/default-avatar.png'}
+            alt={user.user_metadata?.user_metadata?.name || 'User avatar'}
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
         </div>
         <Button variant="ghost" size="sm" onClick={handleSignOut} title="התנתק" disabled={isPending}>
           {isPending ? (
