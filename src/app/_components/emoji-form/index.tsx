@@ -278,7 +278,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       )}
 
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
-      <PaymentDialog isOpen={showPaymentModal} onOpenChange={setShowPaymentModal} />
+      <PaymentDialog open={showPaymentModal} onOpenChange={setShowPaymentModal} />
     </div>
   )
 }
