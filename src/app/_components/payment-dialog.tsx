@@ -68,7 +68,7 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
         <DialogHeader>
           <DialogTitle>נגמרו לך קרדיטי היצירה</DialogTitle>
           <DialogDescription>
-             נגמרו לך קרדיטי היצירה. רכוש עוד קרדיטים כדי להמשיך ליצור אימוג'ים מדהימים!
+             נגמרו לך קרדיטי היצירה. רכוש עוד קרדיטים כדי להמשיך ליצור אימוג&#39;ים מדהימים!
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
