@@ -32,16 +32,22 @@ export async function createCheckout({
   }
 
   try {
+    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`;
+    const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`;
+
+    // Log the specific success URL
+    console.log("Success URL being sent:", successUrl);
+
     // Log the request payload for debugging
     const requestPayload = {
       data: {
         type: 'checkouts',
         attributes: {
-          store_id: parseInt(process.env.LEMON_SQUEEZY_STORE_ID, 10),
+          store_id: parseInt(process.env.LEMON_SQUEEZY_STORE_ID!, 10),
           variant_id: parseInt(variantId, 10),
           custom_data: customData || {},
-          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`,
+          success_url: successUrl,
+          cancel_url: cancelUrl,
         },
       },
     };
