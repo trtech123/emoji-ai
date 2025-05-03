@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -22,10 +21,11 @@ interface ProductOption {
   variantId: number;
 }
 
+// Hebrew price formatting and text
 const productOptions: ProductOption[] = [
-  { name: "10 Emojis", description: "Get 10 generation credits", price: "9.90 ILS", variantId: 780193 },
-  { name: "100 Emojis", description: "Get 100 generation credits", price: "28.90 ILS", variantId: 780206 },
-  { name: "1,000 Emojis", description: "Get 1,000 generation credits", price: "199.99 ILS", variantId: 780214 },
+  { name: "10 אימוג׳ים", description: "קבל 10 קרדיטי יצירה", price: "₪9.90", variantId: 780193 },
+  { name: "100 אימוג׳ים", description: "קבל 100 קרדיטי יצירה", price: "₪28.90", variantId: 780206 },
+  { name: "1,000 אימוג׳ים", description: "קבל 1,000 קרדיטי יצירה", price: "₪199.99", variantId: 780214 },
 ];
 
 export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
@@ -45,19 +45,16 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || `Request failed with status ${response.status}`);
+        setIsSubmitting(null);
+        return;
       }
 
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        throw new Error('Checkout URL not received.');
+        setIsSubmitting(null);
       }
-
     } catch (error) {
-      console.error("Checkout failed:", error);
-      const errorMsg = error instanceof Error ? error.message : "An unknown error occurred.";
-      toast.error(`Failed to initiate purchase: ${errorMsg}`);
       setIsSubmitting(null);
     }
   };

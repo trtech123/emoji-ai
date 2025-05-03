@@ -175,7 +175,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
     if (!isAdmin && availableCredits <= 0) {
       setError("נגמרו לך קרדיטי היצירה.");
-      toast.error("אין לך מספיק קרדיטים.");
       setIsSubmitting(false);
       setShowPaymentModal(true);
       return;
@@ -201,7 +200,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
       if (response.status === 402) {
         setError("נגמרו לך קרדיטי היצירה.");
-        toast.error("אין לך מספיק קרדיטים.");
         setIsSubmitting(false);
         setShowPaymentModal(true);
         return;
