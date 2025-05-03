@@ -24,7 +24,7 @@ interface ProductOption {
 // Hebrew price formatting and text
 const productOptions: ProductOption[] = [
   { name: "10 אימוג׳ים", description: "קבל 10 קרדיטי יצירה", price: "₪9.90", variantId: 780193 },
-  { name: "100 אימוג׳ים", description: "קבל 100 קרדיטי יצירה", price: "₪28.90", variantId: 780206 },
+  { name: "100 אימוג׳ים", description: "קבל 100 קרדיטי יצירה", price: "₪28.99", variantId: 780206 },
   { name: "1,000 אימוג׳ים", description: "קבל 1,000 קרדיטי יצירה", price: "₪199.99", variantId: 780214 },
 ];
 
