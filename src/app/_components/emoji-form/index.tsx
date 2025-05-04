@@ -275,6 +275,15 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
         <p className="text-sm text-destructive mt-2">{error}</p>
       )}
 
+      <div className="mt-2 text-sm text-muted-foreground">
+        {isLoadingProfile && user && (
+          <Skeleton className="h-4 w-32 inline-block" />
+        )}
+        {!isLoadingProfile && user && userProfile && (
+          <span>קרדיטים שנותרו: {userProfile.generation_credits}</span>
+        )}
+      </div>
+
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
       <PaymentDialog 
         open={showPaymentModal} 
