@@ -8,89 +8,87 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+
+// --- Get this from environment variables --- MUST BE SET
+const CARDCOM_BASE_URL = process.env.NEXT_PUBLIC_CARDCOM_PAYMENT_URL;
+// -------------------------------------------
 
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userId: string | null;
 }
 
-interface ProductOption {
-  name: string;
-  description: string;
-  price: string;
-  variantId: number;
-}
+export function PaymentDialog({ open, onOpenChange, userId }: PaymentDialogProps) {
+  const [isLoading, setIsLoading] = React.useState(false);
 
-// Hebrew price formatting and text
-const productOptions: ProductOption[] = [
-  { name: "10 אימוג׳ים", description: "קבל 10 קרדיטי יצירה", price: "₪9.99", variantId: 780193 },
-  { name: "100 אימוג׳ים", description: "קבל 100 קרדיטי יצירה", price: "₪28.99", variantId: 780206 },
-  { name: "1,000 אימוג׳ים", description: "קבל 1,000 קרדיטי יצירה", price: "₪199.99", variantId: 780214 },
-];
+  const handleCardcomPurchase = async () => {
+    setIsLoading(true);
+    toast("Redirecting to payment page...");
 
-export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
-  const [isSubmitting, setIsSubmitting] = React.useState<number | null>(null);
+    if (!userId) {
+      toast.error("User not identified. Please ensure you are logged in.");
+      setIsLoading(false);
+      return;
+    }
 
-  const handlePurchase = async (variantId: number) => {
-    setIsSubmitting(variantId);
-    try {
-      const response = await fetch('/api/payments/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ variantId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setIsSubmitting(null);
+    if (!CARDCOM_BASE_URL) {
+        console.error("NEXT_PUBLIC_CARDCOM_PAYMENT_URL is not configured!");
+        toast.error("Payment system is not configured. Please contact support.");
+        setIsLoading(false);
         return;
-      }
+    }
 
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        setIsSubmitting(null);
-      }
+    try {
+      // --- Construct the final URL --- 
+      // Following the example: ReturnData and Custom21 both get the user ID
+      const finalCardcomUrl = `${CARDCOM_BASE_URL}?ReturnData=${encodeURIComponent(userId)}&Custom21=${encodeURIComponent(userId)}`;
+      
+      console.log(`Redirecting user ${userId} to Cardcom: ${finalCardcomUrl}`);
+
+      // --- Redirect the user --- 
+      window.location.href = finalCardcomUrl;
+      // No need to setIsLoading(false) as the page navigates away
+
     } catch (error) {
-      setIsSubmitting(null);
+      console.error("Error initiating Cardcom redirect:", error);
+      toast.error("Failed to initiate payment. Please try again.");
+      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (isLoading && !isOpen) return; // Prevent closing while loading/redirecting
+      onOpenChange(isOpen);
+    }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>נגמרו לך קרדיטי היצירה</DialogTitle>
           <DialogDescription>
-             נגמרו לך קרדיטי היצירה. רכוש עוד קרדיטים כדי להמשיך ליצור אימוג&#39;ים מדהימים!
+            רכוש עוד קרדיטים כדי להמשיך ליצור אימוג'ים מדהימים!
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-4 py-4">
-          {productOptions.map((option) => (
-            <div key={option.variantId} className="flex items-center justify-between p-4 border rounded-lg gap-4">
-              <div className="flex-grow">
-                <p className="font-medium">{option.name}</p>
-                <p className="text-sm text-muted-foreground">{option.description}</p>
-              </div>
-              <Button
-                onClick={() => handlePurchase(option.variantId)}
-                disabled={isSubmitting !== null}
-                className="min-w-[120px]"
-              >
-                {isSubmitting === option.variantId ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    מעבד...
-                  </>
-                ) : (
-                  option.price
-                )}
-              </Button>
-            </div>
-          ))}
+        <div className="flex flex-col items-center gap-4 py-4">
+           {/* Simplified content - Single button */} 
+           <p className="text-center text-muted-foreground">לחץ על הכפתור כדי לעבור לדף תשלום מאובטח.</p>
+           <Button
+            onClick={handleCardcomPurchase}
+            disabled={isLoading || !userId} // Disable if loading or no user ID
+            className="w-full max-w-xs"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                מעבר לתשלום...
+              </>
+            ) : (
+              "רכוש קרדיטים"
+            )}
+          </Button>
+           { !userId && <p className="text-sm text-red-500">Please log in to purchase credits.</p> }
         </div>
       </DialogContent>
     </Dialog>

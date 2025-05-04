@@ -234,7 +234,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="relative w-full">
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         <div className="relative">
           <Textarea
@@ -276,7 +276,11 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       )}
 
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
-      <PaymentDialog open={showPaymentModal} onOpenChange={setShowPaymentModal} />
+      <PaymentDialog 
+        open={showPaymentModal} 
+        onOpenChange={setShowPaymentModal} 
+        userId={user?.id ?? null}
+      />
     </div>
   )
 }
