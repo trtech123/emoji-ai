@@ -55,14 +55,13 @@ export function SearchBar({ className }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Update URL and trigger search when debounced query changes
   useEffect(() => {
     if (user) {
       const params = new URLSearchParams();
       if (debouncedSearchQuery) {
         params.set("q", debouncedSearchQuery);
+        router.push(`/search?${params.toString()}`);
       }
-      router.push(`/search?${params.toString()}`);
     }
   }, [debouncedSearchQuery, router, user]);
 

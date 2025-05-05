@@ -25,7 +25,6 @@ export function PaymentDialog({ open, onOpenChange, userId }: PaymentDialogProps
 
   const handleCardcomPurchase = async () => {
     setIsLoading(true);
-    toast("Redirecting to payment page...");
 
     if (!userId) {
       toast.error("User not identified. Please ensure you are logged in.");
@@ -41,16 +40,9 @@ export function PaymentDialog({ open, onOpenChange, userId }: PaymentDialogProps
     }
 
     try {
-      // --- Construct the final URL --- 
-      // Following the example: ReturnData and Custom21 both get the user ID
       const finalCardcomUrl = `${CARDCOM_BASE_URL}?ReturnData=${encodeURIComponent(userId)}&Custom21=${encodeURIComponent(userId)}`;
-      
       console.log(`Redirecting user ${userId} to Cardcom: ${finalCardcomUrl}`);
-
-      // --- Redirect the user --- 
       window.location.href = finalCardcomUrl;
-      // No need to setIsLoading(false) as the page navigates away
-
     } catch (error) {
       console.error("Error initiating Cardcom redirect:", error);
       toast.error("Failed to initiate payment. Please try again.");
