@@ -7,7 +7,7 @@ import {
   Search,
   User,
   LogOut,
-  CreditCard,
+  Smile,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useTransition } from 'react'
@@ -111,7 +111,7 @@ export function MobileBottomNav() {
                 "text-muted-foreground"
               )}
             >
-              <CreditCard className="h-5 w-5" />
+              <Smile className="h-5 w-5" />
               <span className="text-xs mt-1">קרדיטים</span>
             </button>
           )}

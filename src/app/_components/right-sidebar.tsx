@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   PlusSquare,
   Search,
-  CreditCard,
+  Smile,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -71,7 +71,7 @@ export default function RightSidebar() {
   const sidebarItems = [
     { name: 'יצירה', action: () => router.push('/'), icon: PlusSquare, requiresAuth: true },
     { name: 'חיפוש', action: () => router.push('/search'), icon: Search, requiresAuth: true },
-    { name: 'רכוש קרדיטים', action: openPaymentModal, icon: CreditCard, requiresAuth: true },
+    { name: 'רכוש קרדיטים', action: openPaymentModal, icon: Smile, requiresAuth: true },
   ]
 
   return (
