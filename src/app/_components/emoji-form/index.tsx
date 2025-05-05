@@ -23,6 +23,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared"
 import Link from "next/link"
 import { AuthDialog } from "../auth-dialog"
 import { PaymentDialog } from "../payment-dialog"
+import { useUIStore } from "@/stores/ui-store"
 
 interface Profile {
   id: string
@@ -44,11 +45,12 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [showLoginModal, setShowLoginModal] = React.useState(false)
-  const [showPaymentModal, setShowPaymentModal] = React.useState(false)
   const [user, setUser] = React.useState<User | null>(null)
   const [userProfile, setUserProfile] = React.useState<Profile | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = React.useState(true)
   const router = useRouter()
+
+  const { isPaymentModalOpen, openPaymentModal, closePaymentModal } = useUIStore();
 
   React.useEffect(() => {
     const fetchUserProfile = async (currentUser: User) => {
@@ -176,7 +178,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
     if (!isAdmin && availableCredits <= 0) {
       setError("נגמרו לך קרדיטי היצירה.");
       setIsSubmitting(false);
-      setShowPaymentModal(true);
+      openPaymentModal();
       return;
     }
 
@@ -201,7 +203,7 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       if (response.status === 402) {
         setError("נגמרו לך קרדיטי היצירה.");
         setIsSubmitting(false);
-        setShowPaymentModal(true);
+        openPaymentModal();
         return;
       }
 
@@ -286,8 +288,12 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
 
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
       <PaymentDialog 
-        open={showPaymentModal} 
-        onOpenChange={setShowPaymentModal} 
+        open={isPaymentModalOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            closePaymentModal();
+          }
+        }} 
         userId={user?.id ?? null}
       />
     </div>

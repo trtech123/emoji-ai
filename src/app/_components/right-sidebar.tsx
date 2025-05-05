@@ -5,17 +5,22 @@ import { useRouter } from 'next/navigation'
 import {
   PlusSquare,
   Search,
+  CreditCard,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { signInWithGoogle } from '@/lib/auth-utils'
 import toast from 'react-hot-toast'
+import type { User, Session } from '@supabase/supabase-js'
+import { useUIStore } from "@/stores/ui-store"
+import { Button } from "@/components/ui/button"
 
 export default function RightSidebar() {
   const [isMobile, setIsMobile] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const supabase = createClient()
   const router = useRouter()
+  const { openPaymentModal } = useUIStore()
 
   // Check if the device is mobile
   useEffect(() => {
@@ -35,13 +40,13 @@ export default function RightSidebar() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      setUser(currentUser)
     }
     
     checkUser()
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
       setUser(session?.user ?? null)
     })
     
@@ -85,6 +90,19 @@ export default function RightSidebar() {
           ))}
         </ul>
       </nav>
+
+      {user && (
+        <div className="mt-auto pt-4 border-t border-border">
+           <Button 
+             variant="outline" 
+             className="w-full" 
+             onClick={openPaymentModal}
+           >
+             <CreditCard className="ml-2 h-4 w-4" />
+             רכוש קרדיטים
+           </Button>
+         </div>
+      )}
     </aside>
   )
 }

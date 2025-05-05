@@ -5,8 +5,13 @@ import { SearchBar } from './search-bar'
 import { AuthButton } from './auth-button'
 import { cn } from '@/lib/utils'
 import { BODY_PADDING } from '@/lib/constants'
-import { Home } from 'lucide-react'
+import { Home, CreditCard } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import type { User, Session } from '@supabase/supabase-js'
+import { useUIStore } from "@/stores/ui-store"
+import { Button } from "@/components/ui/button"
 
 export function HeaderWithSearch() {
   const pathname = usePathname()
@@ -14,8 +19,40 @@ export function HeaderWithSearch() {
   const isHomePage = pathname === '/'
   const isEmojiPage = pathname.startsWith('/p/')
   
+  // State for user and mobile check
+  const [isMobile, setIsMobile] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const supabase = createClient()
+  const { openPaymentModal } = useUIStore()
+
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      // Use innerWidth for client-side check
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768) // md breakpoint is 768px
+    }
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile)
+    return () => window.removeEventListener('resize', checkIfMobile)
+  }, [])
+
+  // Check user authentication state
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      setUser(currentUser)
+    }
+    checkUser()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+      setUser(session?.user ?? null)
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase.auth])
+  
   // Hide header on mobile for home and emoji pages
-  if ((isHomePage || isEmojiPage) && typeof window !== 'undefined' && window.innerWidth < 640) {
+  if (isMobile && (isHomePage || isEmojiPage)) {
     return null
   }
   
@@ -32,8 +69,20 @@ export function HeaderWithSearch() {
           <SearchBar className="w-full" />
         </div>
 
-        {/* Left - Auth button */}
-        <div className={cn("flex-none", isSearchPage ? "hidden md:block" : "")}>
+        {/* Left - Auth button and Purchase Credits (Mobile) */}
+        <div className={cn("flex items-center gap-2 flex-none", isSearchPage ? "hidden md:flex" : "flex")}>
+          {/* Show Purchase Credits Button only on Mobile for logged-in users */} 
+          {user && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden" // Only show on mobile (below md breakpoint)
+              onClick={openPaymentModal} 
+              aria-label="רכוש קרדיטים"
+            >
+              <CreditCard className="h-5 w-5" />
+            </Button>
+          )}
           <AuthButton />
         </div>
       </div>
