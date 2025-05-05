@@ -55,7 +55,7 @@ export default function RightSidebar() {
     }
   }, [supabase.auth])
 
-  const handleAuthRequiredAction = async (href: string) => {
+  const handleAuthRequiredAction = async (action: () => void) => {
     if (!user) {
       try {
         await signInWithGoogle()
@@ -64,13 +64,14 @@ export default function RightSidebar() {
         console.error('Error signing in with Google:', error)
       }
     } else {
-      router.push(href)
+      action()
     }
   }
 
   const sidebarItems = [
-    { name: 'יצירה', href: '/', icon: PlusSquare, requiresAuth: true },
-    { name: 'חיפוש', href: '/search', icon: Search, requiresAuth: true },
+    { name: 'יצירה', action: () => router.push('/'), icon: PlusSquare, requiresAuth: true },
+    { name: 'חיפוש', action: () => router.push('/search'), icon: Search, requiresAuth: true },
+    { name: 'רכוש קרדיטים', action: openPaymentModal, icon: CreditCard, requiresAuth: true },
   ]
 
   return (
@@ -80,7 +81,7 @@ export default function RightSidebar() {
           {sidebarItems.map((item) => (
             <li key={item.name}>
               <button
-                onClick={() => item.requiresAuth ? handleAuthRequiredAction(item.href) : router.push(item.href)}
+                onClick={() => item.requiresAuth ? handleAuthRequiredAction(item.action) : item.action()}
                 className={`flex items-center gap-2 px-2 py-2 ${isMobile ? 'text-[10px]' : 'text-sm'} font-medium rounded-md hover:bg-accent w-full`}
               >
                 <item.icon className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground`} />
@@ -90,19 +91,6 @@ export default function RightSidebar() {
           ))}
         </ul>
       </nav>
-
-      {user && (
-        <div className="mt-auto pt-4 border-t border-border">
-           <Button 
-             variant="outline" 
-             className="w-full" 
-             onClick={openPaymentModal}
-           >
-             <CreditCard className="ml-2 h-4 w-4" />
-             רכוש קרדיטים
-           </Button>
-         </div>
-      )}
     </aside>
   )
 }

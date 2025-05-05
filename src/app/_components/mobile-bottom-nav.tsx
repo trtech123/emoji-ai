@@ -6,7 +6,8 @@ import {
   PlusSquare,
   Search,
   User,
-  LogOut
+  LogOut,
+  CreditCard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useTransition } from 'react'
@@ -23,23 +24,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useUIStore } from "@/stores/ui-store"
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js'
 
 export function MobileBottomNav() {
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
   const [isPending, startTransition] = useTransition()
   const [showSignOutDialog, setShowSignOutDialog] = useState(false)
   const supabase = createClient()
+  const { openPaymentModal } = useUIStore()
   
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      setUser(currentUser)
     }
     
     checkUser()
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
       setUser(session?.user ?? null)
     })
     
@@ -98,7 +102,20 @@ export function MobileBottomNav() {
             )
           })}
           
-          {/* Profile button */}
+          {user && (
+            <button
+              key="purchase-credits"
+              onClick={openPaymentModal}
+              className={cn(
+                "flex flex-col items-center justify-center w-full h-full",
+                "text-muted-foreground"
+              )}
+            >
+              <CreditCard className="h-5 w-5" />
+              <span className="text-xs mt-1">קרדיטים</span>
+            </button>
+          )}
+          
           <button
             onClick={() => user ? setShowSignOutDialog(true) : handleAuthRequiredAction('/profile')}
             className={cn(
@@ -120,7 +137,6 @@ export function MobileBottomNav() {
         </nav>
       </div>
 
-      {/* Sign out confirmation dialog */}
       <Dialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
         <DialogContent>
           <DialogHeader>
