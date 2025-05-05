@@ -65,7 +65,7 @@ export function PaymentDialog({ open, onOpenChange, userId }: PaymentDialogProps
     }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>נגמרו לך קרדיטי היצירה</DialogTitle>
+          <DialogTitle>רכוש קרדיטים</DialogTitle>
           <DialogDescription>
             רכוש עוד קרדיטים כדי להמשיך ליצור אימוג&apos;ים מדהימים!
           </DialogDescription>
