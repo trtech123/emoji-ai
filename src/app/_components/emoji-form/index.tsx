@@ -22,7 +22,7 @@ import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import Link from "next/link"
 import { AuthDialog } from "../auth-dialog"
-import { PaymentDialog } from "../payment-dialog"
+// import { PaymentDialog } from "../payment-dialog" // Removed
 import { useUIStore } from "@/stores/ui-store"
 
 interface Profile {
@@ -287,15 +287,6 @@ export function EmojiForm({ initialPrompt }: EmojiFormProps) {
       </div>
 
       <AuthDialog isOpen={showLoginModal} onOpenChange={setShowLoginModal} />
-      <PaymentDialog 
-        open={isPaymentModalOpen}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            closePaymentModal();
-          }
-        }} 
-        userId={user?.id ?? null}
-      />
     </div>
   )
 }

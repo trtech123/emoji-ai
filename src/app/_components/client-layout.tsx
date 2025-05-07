@@ -10,6 +10,11 @@ import { BODY_PADDING } from "@/lib/constants"
 import { MobileInputFix } from "./mobile-input-fix"
 import { MobileBottomNav } from "./mobile-bottom-nav"
 import { HeaderWithSearch } from "./header-with-search"
+import { PaymentDialog } from "./payment-dialog"
+import { useUIStore } from "@/stores/ui-store"
+import { createClient } from "@/lib/supabase/client"
+import type { User } from "@supabase/supabase-js"
+import { useEffect, useState } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,6 +23,27 @@ interface ClientLayoutProps {
 }
 
 export function ClientLayout({ children }: ClientLayoutProps) {
+  const { isPaymentModalOpen, closePaymentModal } = useUIStore();
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+    };
+    
+    checkUser();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: import('@supabase/supabase-js').Session | null) => {
+      setUser(session?.user ?? null);
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase.auth]);
+
   return (
     <html lang="he" dir="rtl" suppressHydrationWarning>
       <head>
@@ -38,6 +64,15 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         </div>
         <MobileBottomNav />
         <Toaster position="bottom-left" />
+        <PaymentDialog
+          open={isPaymentModalOpen}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              closePaymentModal();
+            }
+          }}
+          userId={user?.id ?? null}
+        />
       </body>
     </html>
   )
